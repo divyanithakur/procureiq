@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>ProcureIQ | Procurement Intelligence</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+
+<body>
+
+
+  <!-- =========================================
+       HEADER
+  ========================================== -->
+
+  <header>
+
+    <h1>ProcureIQ</h1>
+
+    <p>
+      Procurement Intelligence Layer
+    </p>
+
+  </header>
+
+
+
+  <main>
+
+
+    <!-- =========================================
+         HERO
+    ========================================== -->
+
+    <section class="hero">
+
+      <div>
+
+        <h2>
+          Find hidden procurement opportunities.
+        </h2>
+
+        <p>
+          Analyse procurement data, detect anomalies,
+          prioritize investigations and estimate
+          potential savings.
+        </p>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         KPI / STATS
+    ========================================== -->
+
+    <section class="stats">
+
+
+      <div class="card">
+
+        <span>
+          Total Spend
+        </span>
+
+        <strong id="totalSpend">
+          ₹0
+        </strong>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <span>
+          Transactions
+        </span>
+
+        <strong id="transactions">
+          0
+        </strong>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <span>
+          Opportunities
+        </span>
+
+        <strong id="opportunities">
+          0
+        </strong>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <span>
+          Potential Savings
+        </span>
+
+        <strong id="savings">
+          ₹0
+        </strong>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         UPLOAD DATA
+    ========================================== -->
+
+    <section class="upload">
+
+
+      <h2>
+        Upload Procurement Data
+      </h2>
+
+
+      <p>
+        Upload your CSV file to analyze
+        procurement transactions.
+      </p>
+
+
+      <div class="upload-controls">
+
+        <input
+          type="file"
+          id="csvFile"
+          accept=".csv"
+        >
+
+
+        <button id="uploadBtn">
+          Analyze CSV
+        </button>
+
+      </div>
+
+
+      <p id="uploadStatus"></p>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         ANALYTICS
+    ========================================== -->
+
+    <section class="analytics">
+
+  <!-- Supplier Analysis -->
+
+  <div class="analytics-card">
+
+    <h2>Supplier Analysis</h2>
+
+    <p>
+      Compare supplier spend and identify
+      the highest-cost suppliers.
+    </p>
+
+    <div id="supplierAnalysis">
+
+      <p class="empty-message">
+        Upload procurement data to view supplier analysis.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- Material Analysis -->
+
+  <div class="analytics-card">
+
+    <h2>Material Spend Analysis</h2>
+
+    <p>
+      Understand how procurement spend is
+      distributed across materials.
+    </p>
+
+    <div id="materialAnalysis">
+
+      <p class="empty-message">
+        Upload procurement data to view material analysis.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================
+     SPEND VISUALIZATION
+========================================== -->
+
+<section class="charts">
+
+  <div class="chart-card">
+
+    <h2>Supplier Spend Overview</h2>
+
+    <p>
+      Procurement spend by supplier.
+    </p>
+
+    <div id="supplierChart" class="chart-container"></div>
+
+  </div>
+
+
+  <div class="chart-card">
+
+    <h2>Material Spend Overview</h2>
+
+    <p>
+      Procurement spend by material.
+    </p>
+
+    <div id="materialChart" class="chart-container"></div>
+
+  </div>
+
+</section>
+      <!-- MATERIAL ANALYSIS -->
+
+      <div class="analytics-card">
+
+        <h2>
+          Material Spend Analysis
+        </h2>
+
+
+        <p>
+          Understand how procurement spend is
+          distributed across materials.
+        </p>
+
+
+        <div id="materialAnalysis">
+
+          <p class="empty-message">
+            Upload procurement data to view
+            material analysis.
+          </p>
+
+        </div>
+
+      </div>
+
+
+    </section>
+
+    <!-- =========================================
+     PROCUREMENT FILTERS
+========================================== -->
+
+<section class="filters">
+
+  <div class="filter-header">
+    <div>
+      <h2>Investigate Opportunities</h2>
+      <p>
+        Filter procurement opportunities by supplier,
+        material and priority.
+      </p>
+    </div>
+
+    <button id="clearFilters" class="clear-filter">
+      Clear Filters
+    </button>
+  </div>
+
+
+  <div class="filter-controls">
+
+    <div class="filter-group">
+
+      <label for="supplierFilter">
+        Supplier
+      </label>
+
+      <select id="supplierFilter">
+        <option value="ALL">
+          All Suppliers
+        </option>
+      </select>
+
+    </div>
+
+
+    <div class="filter-group">
+
+      <label for="materialFilter">
+        Material
+      </label>
+
+      <select id="materialFilter">
+        <option value="ALL">
+          All Materials
+        </option>
+      </select>
+
+    </div>
+
+
+    <div class="filter-group">
+
+      <label for="priorityFilter">
+        Priority
+      </label>
+
+      <select id="priorityFilter">
+
+        <option value="ALL">
+          All Priorities
+        </option>
+
+        <option value="HIGH">
+          High
+        </option>
+
+        <option value="MEDIUM">
+          Medium
+        </option>
+
+        <option value="LOW">
+          Low
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+    <!-- =========================================
+         PRIORITY OPPORTUNITIES
+    ========================================== -->
+
+    <section class="opportunities">
+
+
+      <h2>
+        Priority Opportunities
+      </h2>
+
+
+      <p class="section-description">
+        Procurement opportunities ranked by
+        price variance and potential savings.
+      </p>
+
+
+      <div id="opportunityList">
+
+
+        <!-- Default state -->
+
+        <div class="opportunity">
+
+          <div>
+
+            <h3>
+              Upload data to find opportunities
+            </h3>
+
+
+            <p>
+              ProcureIQ will identify price
+              variance, prioritize investigations
+              and estimate potential savings.
+            </p>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+    </section>
+
+
+  </main>
+
+
+
+  <!-- =========================================
+       JAVASCRIPT
+  ========================================== -->
+
+  <script src="script.js"></script>
+
+
+</body>
+
+</html>
