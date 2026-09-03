@@ -8,36 +8,40 @@ const { GoogleGenAI } = require("@google/genai");
 const app = express();
 
 /* =====================================================
-   SERVER CONFIG
+   PORT
 ===================================================== */
 
 const PORT = process.env.PORT || 3000;
 
+
 /* =====================================================
-   POSTGRESQL CONFIG
+   POSTGRESQL
 ===================================================== */
 
-const poolConfig = process.env.DATABASE_URL
-  ? {
-      connectionString: process.env.DATABASE_URL,
+let pool;
 
-      // Needed for many hosted PostgreSQL providers
-      ssl: {
-        rejectUnauthorized: false
-      }
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+
+    // Required for many hosted PostgreSQL providers
+    ssl: {
+      rejectUnauthorized: false
     }
-  : {
-      user: process.env.DB_USER || "postgres",
-      host: process.env.DB_HOST || "localhost",
-      database: process.env.DB_NAME || "procureiq",
-      password: process.env.DB_PASSWORD,
-      port: Number(process.env.DB_PORT) || 5432
-    };
+  });
+} else {
+  pool = new Pool({
+    user: process.env.DB_USER || "postgres",
+    host: process.env.DB_HOST || "localhost",
+    database: process.env.DB_NAME || "procureiq",
+    password: process.env.DB_PASSWORD,
+    port: Number(process.env.DB_PORT) || 5432
+  });
+}
 
-const pool = new Pool(poolConfig);
 
 /* =====================================================
-   GEMINI CONFIG
+   GEMINI
 ===================================================== */
 
 const ai = process.env.GEMINI_API_KEY
@@ -46,55 +50,69 @@ const ai = process.env.GEMINI_API_KEY
     })
   : null;
 
+
 /* =====================================================
    MIDDLEWARE
 ===================================================== */
 
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json({ limit: "10mb" }));
 
 // Serve frontend files
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, ".")));
+
+
+/* =====================================================
+   DATABASE INITIALIZATION
+===================================================== */
+
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        material TEXT NOT NULL,
+        supplier TEXT NOT NULL,
+        quantity NUMERIC NOT NULL,
+        price NUMERIC NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log("✅ PostgreSQL connected successfully");
+    console.log("✅ Transactions table ready");
+
+  } catch (error) {
+    console.error(
+      "❌ PostgreSQL initialization failed:",
+      error.message
+    );
+  }
+}
+
 
 /* =====================================================
    HEALTH CHECK
 ===================================================== */
 
-app.get("/health", async (req, res) => {
+app.get("/api/health", async (req, res) => {
   try {
     await pool.query("SELECT 1");
 
     res.json({
       success: true,
-      message: "ProcureIQ server is healthy",
-      database: "connected",
-      gemini: ai ? "configured" : "not configured"
+      message: "ProcureIQ API is running",
+      database: "connected"
     });
-  } catch (error) {
-    console.error("Health check database error:", error.message);
 
+  } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server is running but database connection failed",
-      error: error.message
+      message: "API is running but database is unavailable",
+      database: "disconnected"
     });
   }
 });
 
-/* =====================================================
-   DATABASE CONNECTION TEST
-===================================================== */
-
-async function testDatabaseConnection() {
-  try {
-    await pool.query("SELECT 1");
-    console.log("✅ PostgreSQL connected successfully");
-  } catch (error) {
-    console.error(
-      "❌ PostgreSQL connection failed:",
-      error.message
-    );
-  }
-}
 
 /* =====================================================
    GET TRANSACTIONS
@@ -114,27 +132,28 @@ app.get("/api/transactions", async (req, res) => {
       ORDER BY id ASC
     `);
 
-    res.status(200).json(result.rows);
+    res.json(result.rows);
 
   } catch (error) {
     console.error(
       "❌ Fetch transactions error:",
-      error
+      error.message
     );
 
     res.status(500).json({
-      error: "Unable to fetch transactions",
-      details: error.message
+      error: "Unable to fetch transactions"
     });
   }
 });
+
 
 /* =====================================================
    UPLOAD TRANSACTIONS
 ===================================================== */
 
 app.post("/api/transactions/upload", async (req, res) => {
-  const transactions = req.body?.transactions;
+
+  const transactions = req.body.transactions;
 
   /* ---------------------------------------------
      VALIDATE REQUEST
@@ -154,12 +173,10 @@ app.post("/api/transactions/upload", async (req, res) => {
     });
   }
 
+
   let client;
 
   try {
-    /* ---------------------------------------------
-       GET DATABASE CLIENT
-    --------------------------------------------- */
 
     client = await pool.connect();
 
@@ -169,30 +186,25 @@ app.post("/api/transactions/upload", async (req, res) => {
     let duplicates = 0;
     let invalid = 0;
 
+
     /* ---------------------------------------------
-       PROCESS TRANSACTIONS
+       PROCESS EACH TRANSACTION
     --------------------------------------------- */
 
     for (const item of transactions) {
-      const material = String(
-        item.material ?? ""
-      ).trim();
 
-      const supplier = String(
-        item.supplier ?? ""
-      ).trim();
+      const material =
+        String(item.material || "").trim();
 
-      const quantity = Number(
-        String(item.quantity ?? "")
-          .replace(/,/g, "")
-      );
+      const supplier =
+        String(item.supplier || "").trim();
 
-      const price = Number(
-        String(item.price ?? "")
-          .replace(/,/g, "")
-          .replace(/[₹$]/g, "")
-          .trim()
-      );
+      const quantity =
+        Number(item.quantity);
+
+      const price =
+        Number(item.price);
+
 
       /* -----------------------------------------
          VALIDATION
@@ -209,6 +221,7 @@ app.post("/api/transactions/upload", async (req, res) => {
         invalid++;
         continue;
       }
+
 
       /* -----------------------------------------
          DUPLICATE CHECK
@@ -233,10 +246,12 @@ app.post("/api/transactions/upload", async (req, res) => {
         ]
       );
 
+
       if (duplicateCheck.rows.length > 0) {
         duplicates++;
         continue;
       }
+
 
       /* -----------------------------------------
          INSERT
@@ -245,14 +260,14 @@ app.post("/api/transactions/upload", async (req, res) => {
       await client.query(
         `
         INSERT INTO transactions
-        (
-          material,
-          supplier,
-          quantity,
-          price
-        )
+          (
+            material,
+            supplier,
+            quantity,
+            price
+          )
         VALUES
-        ($1, $2, $3, $4)
+          ($1, $2, $3, $4)
         `,
         [
           material,
@@ -265,17 +280,20 @@ app.post("/api/transactions/upload", async (req, res) => {
       inserted++;
     }
 
+
     await client.query("COMMIT");
 
-    console.log(
-      `✅ Upload complete: ${inserted} inserted, ${duplicates} duplicates`
-    );
 
-    return res.status(200).json({
+    /* -----------------------------------------
+       RESPONSE
+    ----------------------------------------- */
+
+    res.json({
       success: true,
       inserted,
       duplicates,
       invalid,
+      total: transactions.length,
       message:
         `${inserted} new transaction(s) added. ` +
         `${duplicates} duplicate(s) skipped.`
@@ -288,21 +306,24 @@ app.post("/api/transactions/upload", async (req, res) => {
         await client.query("ROLLBACK");
       } catch (rollbackError) {
         console.error(
-          "Rollback error:",
+          "❌ Rollback error:",
           rollbackError.message
         );
       }
     }
 
     console.error(
-      "❌ Upload transactions error:",
-      error
+      "❌ Upload endpoint error:",
+      error.message
     );
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: "Unable to save transactions.",
-      details: error.message
+      details:
+        process.env.NODE_ENV === "production"
+          ? undefined
+          : error.message
     });
 
   } finally {
@@ -310,8 +331,10 @@ app.post("/api/transactions/upload", async (req, res) => {
     if (client) {
       client.release();
     }
+
   }
 });
+
 
 /* =====================================================
    GEMINI AI INSIGHT
@@ -319,13 +342,14 @@ app.post("/api/transactions/upload", async (req, res) => {
 
 app.post("/api/insight", async (req, res) => {
 
-  if (!ai) {
-    return res.status(500).json({
-      error: "Gemini API key is not configured."
-    });
-  }
-
   try {
+
+    if (!ai) {
+      return res.status(500).json({
+        error: "Gemini API key is not configured."
+      });
+    }
+
 
     const {
       material,
@@ -335,30 +359,25 @@ app.post("/api/insight", async (req, res) => {
       quantity
     } = req.body;
 
-    if (
-      !material ||
-      !supplier ||
-      price === undefined ||
-      minPrice === undefined ||
-      quantity === undefined
-    ) {
-      return res.status(400).json({
-        error: "Incomplete procurement data."
-      });
-    }
+
+    const numericPrice = Number(price);
+    const numericMinPrice = Number(minPrice);
+    const numericQuantity = Number(quantity);
+
 
     const saving =
-      (Number(price) - Number(minPrice)) *
-      Number(quantity);
+      (numericPrice - numericMinPrice) *
+      numericQuantity;
+
 
     const prompt = `
 You are a procurement intelligence analyst.
 
 Material: ${material}
 Supplier: ${supplier}
-Paid price: ₹${price}/unit
-Best observed price: ₹${minPrice}/unit
-Quantity: ${quantity}
+Paid price: ₹${numericPrice}/unit
+Best observed price: ₹${numericMinPrice}/unit
+Quantity: ${numericQuantity}
 Potential saving: ₹${saving}
 
 Give a concise procurement investigation:
@@ -367,17 +386,14 @@ Give a concise procurement investigation:
 2. What to validate
 3. Recommended action
 
-Consider:
-- quality
-- freight
-- quantity
-- contracts
-- delivery terms
+Consider quality, freight, quantity,
+contracts and delivery.
 
 Do not assume the higher price is wrong.
 
-Keep the response under 100 words.
+Keep it under 100 words.
 `;
+
 
     const response =
       await ai.models.generateContent({
@@ -385,55 +401,51 @@ Keep the response under 100 words.
         contents: prompt
       });
 
-    const insight =
-      response?.text || "";
 
-    if (!insight.trim()) {
-      throw new Error(
-        "Gemini returned an empty response."
-      );
-    }
-
-    return res.status(200).json({
-      success: true,
-      insight
+    res.json({
+      insight: response.text
     });
+
 
   } catch (error) {
 
     console.error(
       "❌ Gemini Error:",
-      error
+      error.message
     );
 
-    return res.status(500).json({
-      error:
-        "AI analysis is temporarily unavailable.",
-      details: error.message
+    res.status(500).json({
+      error: "AI analysis is temporarily unavailable."
     });
   }
 });
 
+
 /* =====================================================
-   FRONTEND FALLBACK
+   ROOT ROUTE
 ===================================================== */
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(
     path.join(__dirname, "index.html")
   );
 });
 
+
 /* =====================================================
    START SERVER
 ===================================================== */
 
-app.listen(PORT, async () => {
+async function startServer() {
 
-  console.log(
-    `🚀 ProcureIQ running on port ${PORT}`
-  );
+  await initializeDatabase();
 
-  await testDatabaseConnection();
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(
+      `🚀 ProcureIQ running on port ${PORT}`
+    );
+  });
+}
 
-});
+
+startServer();
