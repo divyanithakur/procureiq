@@ -117,10 +117,173 @@ uploadBtn?.addEventListener(
 );
 
 
-async function handleCSVUpload() {
 
-  const file =
-    fileInput?.files?.[0];
+
+  async function handleCSVUpload() {
+    const fileInput = document.getElementById("csvFile");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        showError("Please select a file first.");
+        return;
+    }
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    if (!["csv", "xlsx", "xls"].includes(extension)) {
+        showError("Unsupported file format. Please upload CSV or Excel (.xlsx/.xls).");
+        return;
+    }
+
+    try {
+        let transactions = [];
+
+        // ================================
+        // CSV
+        // ================================
+        if (extension === "csv") {
+            const text = await file.text();
+
+            transactions = parseCSV(text);
+        }
+
+        // ================================
+        // EXCEL
+        // ================================
+        else {
+            if (typeof XLSX === "undefined") {
+                throw new Error("Excel library failed to load.");
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+
+            const workbook = XLSX.read(arrayBuffer, {
+                type: "array"
+            });
+
+            if (!workbook.SheetNames.length) {
+                throw new Error("Excel file contains no worksheets.");
+            }
+
+            const firstSheet =
+                workbook.Sheets[workbook.SheetNames[0]];
+
+            const rows = XLSX.utils.sheet_to_json(firstSheet, {
+                defval: ""
+            });
+
+            transactions = rows.map(row => ({
+                material:
+                    row.material ??
+                    row.Material ??
+                    row.MATERIAL ??
+                    row["Material Name"] ??
+                    "",
+
+                supplier:
+                    row.supplier ??
+                    row.Supplier ??
+                    row.SUPPLIER ??
+                    row["Supplier Name"] ??
+                    "",
+
+                quantity:
+                    row.quantity ??
+                    row.Quantity ??
+                    row.QUANTITY ??
+                    "",
+
+                price:
+                    row.price ??
+                    row.Price ??
+                    row.PRICE ??
+                    row["Unit Price"] ??
+                    ""
+            }));
+        }
+
+        // ================================
+        // VALIDATE
+        // ================================
+        if (!Array.isArray(transactions) || transactions.length === 0) {
+            throw new Error(
+                "No transaction data found in the file."
+            );
+        }
+
+        const validTransactions = transactions.filter(item => {
+            const material = String(item.material || "").trim();
+            const supplier = String(item.supplier || "").trim();
+
+            const quantity = Number(item.quantity);
+            const price = Number(item.price);
+
+            return (
+                material &&
+                supplier &&
+                Number.isFinite(quantity) &&
+                Number.isFinite(price) &&
+                quantity > 0 &&
+                price >= 0
+            );
+        });
+
+        if (validTransactions.length === 0) {
+            throw new Error(
+                "No valid transactions found. Required columns are: material, supplier, quantity and price."
+            );
+        }
+
+        // ================================
+        // SEND TO BACKEND
+        // ================================
+        const response = await fetch(
+            "/api/transactions/upload",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    transactions: validTransactions
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Server returned an error."
+            );
+        }
+
+        // ================================
+        // SUCCESS
+        // ================================
+        alert(
+            `${result.inserted || 0} new transaction(s) added.\n` +
+            `${result.duplicates || 0} duplicate(s) skipped.`
+        );
+
+        // Refresh dashboard data
+        if (typeof loadDatabaseData === "function") {
+            await loadDatabaseData();
+        }
+
+        fileInput.value = "";
+
+    } catch (error) {
+
+        console.error("❌ File upload error:", error);
+
+        showError(
+            error.message ||
+            "Unable to process the uploaded file."
+        );
+    }
+}
 
 
   /* ---------------------------------------------
