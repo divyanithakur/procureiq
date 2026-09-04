@@ -286,59 +286,7 @@ uploadBtn?.addEventListener(
 }
 
 
-  /* ---------------------------------------------
-     FILE VALIDATION
-  --------------------------------------------- */
-
-  if (!file) {
-
-    if (status) {
-      status.textContent =
-        "Please select a CSV file.";
-    }
-
-    return;
-
-  }
-
-
-  if (
-    !file.name
-      .toLowerCase()
-      .endsWith(".csv")
-  ) {
-
-    if (status) {
-      status.textContent =
-        "Please select a valid CSV file.";
-    }
-
-    return;
-
-  }
-
-
-  if (status) {
-    status.textContent =
-      "Reading CSV file...";
-  }
-
-
-  try {
-
-    const text =
-      await readCSVFile(file);
-
-
-    if (!text.trim()) {
-
-      throw new Error(
-        "CSV file is empty."
-      );
-
-    }
-
-
+  
     /* ---------------------------------------------
        PARSE CSV
     --------------------------------------------- */
