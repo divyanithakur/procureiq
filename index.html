@@ -38,7 +38,6 @@
   </header>
 
 
-
   <main>
 
 
@@ -65,13 +64,11 @@
     </section>
 
 
-
     <!-- =========================================
          KPI / STATS
     ========================================== -->
 
     <section class="stats">
-
 
       <div class="card">
 
@@ -84,7 +81,6 @@
         </strong>
 
       </div>
-
 
 
       <div class="card">
@@ -100,7 +96,6 @@
       </div>
 
 
-
       <div class="card">
 
         <span>
@@ -112,7 +107,6 @@
         </strong>
 
       </div>
-
 
 
       <div class="card">
@@ -127,9 +121,7 @@
 
       </div>
 
-
     </section>
-
 
 
     <!-- =========================================
@@ -138,35 +130,28 @@
 
     <section class="upload">
 
-
       <h2>
         Upload Procurement Data
       </h2>
 
-
       <p>
-  Upload your procurement file to analyze
-  transactions.
-</p>
+        Upload your procurement file to analyze
+        transactions.
+      </p>
 
-<input
-  type="file"
-  id="csvFile"
-  accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
->
+      <input
+        type="file"
+        id="csvFile"
+        accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      >
 
-<button id="uploadBtn">
-  Analyze File
-</button>
-
-      </div>
-
+      <button id="uploadBtn">
+        Analyze File
+      </button>
 
       <p id="uploadStatus"></p>
 
-
     </section>
-
 
 
     <!-- =========================================
@@ -175,104 +160,24 @@
 
     <section class="analytics">
 
-  <!-- Supplier Analysis -->
 
-  <div class="analytics-card">
-
-    <h2>Supplier Analysis</h2>
-
-    <p>
-      Compare supplier spend and identify
-      the highest-cost suppliers.
-    </p>
-
-    <div id="supplierAnalysis">
-
-      <p class="empty-message">
-        Upload procurement data to view supplier analysis.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <!-- Material Analysis -->
-
-  <div class="analytics-card">
-
-    <h2>Material Spend Analysis</h2>
-
-    <p>
-      Understand how procurement spend is
-      distributed across materials.
-    </p>
-
-    <div id="materialAnalysis">
-
-      <p class="empty-message">
-        Upload procurement data to view material analysis.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================================
-     SPEND VISUALIZATION
-========================================== -->
-
-<section class="charts">
-
-  <div class="chart-card">
-
-    <h2>Supplier Spend Overview</h2>
-
-    <p>
-      Procurement spend by supplier.
-    </p>
-
-    <div id="supplierChart" class="chart-container"></div>
-
-  </div>
-
-
-  <div class="chart-card">
-
-    <h2>Material Spend Overview</h2>
-
-    <p>
-      Procurement spend by material.
-    </p>
-
-    <div id="materialChart" class="chart-container"></div>
-
-  </div>
-
-</section>
-      <!-- MATERIAL ANALYSIS -->
+      <!-- Supplier Analysis -->
 
       <div class="analytics-card">
 
         <h2>
-          Material Spend Analysis
+          Supplier Analysis
         </h2>
 
-
         <p>
-          Understand how procurement spend is
-          distributed across materials.
+          Compare supplier spend and identify
+          the highest-cost suppliers.
         </p>
 
-
-        <div id="materialAnalysis">
+        <div id="supplierAnalysis">
 
           <p class="empty-message">
-            Upload procurement data to view
-            material analysis.
+            Upload procurement data to view supplier analysis.
           </p>
 
         </div>
@@ -280,93 +185,188 @@
       </div>
 
 
+      <!-- Material Analysis -->
+
+      <div class="analytics-card">
+
+        <h2>
+          Material Spend Analysis
+        </h2>
+
+        <p>
+          Understand how procurement spend is
+          distributed across materials.
+        </p>
+
+        <div id="materialAnalysis">
+
+          <p class="empty-message">
+            Upload procurement data to view material analysis.
+          </p>
+
+        </div>
+
+      </div>
+
     </section>
 
+
     <!-- =========================================
-     PROCUREMENT FILTERS
-========================================== -->
+         SPEND VISUALIZATION
+    ========================================== -->
 
-<section class="filters">
-
-  <div class="filter-header">
-    <div>
-      <h2>Investigate Opportunities</h2>
-      <p>
-        Filter procurement opportunities by supplier,
-        material and priority.
-      </p>
-    </div>
-
-    <button id="clearFilters" class="clear-filter">
-      Clear Filters
-    </button>
-  </div>
+    <section class="charts">
 
 
-  <div class="filter-controls">
+      <!-- Supplier Chart -->
 
-    <div class="filter-group">
+      <div class="chart-card">
 
-      <label for="supplierFilter">
-        Supplier
-      </label>
+        <h2>
+          Supplier Spend Overview
+        </h2>
 
-      <select id="supplierFilter">
-        <option value="ALL">
-          All Suppliers
-        </option>
-      </select>
+        <p>
+          Procurement spend by supplier.
+        </p>
 
-    </div>
+        <div
+          id="supplierChart"
+          class="chart-container"
+        ></div>
 
-
-    <div class="filter-group">
-
-      <label for="materialFilter">
-        Material
-      </label>
-
-      <select id="materialFilter">
-        <option value="ALL">
-          All Materials
-        </option>
-      </select>
-
-    </div>
+      </div>
 
 
-    <div class="filter-group">
+      <!-- Material Chart -->
 
-      <label for="priorityFilter">
-        Priority
-      </label>
+      <div class="chart-card">
 
-      <select id="priorityFilter">
+        <h2>
+          Material Spend Overview
+        </h2>
 
-        <option value="ALL">
-          All Priorities
-        </option>
+        <p>
+          Procurement spend by material.
+        </p>
 
-        <option value="HIGH">
-          High
-        </option>
+        <div
+          id="materialChart"
+          class="chart-container"
+        ></div>
 
-        <option value="MEDIUM">
-          Medium
-        </option>
+      </div>
 
-        <option value="LOW">
-          Low
-        </option>
+    </section>
 
-      </select>
 
-    </div>
+    <!-- =========================================
+         PROCUREMENT FILTERS
+    ========================================== -->
 
-  </div>
+    <section class="filters">
 
-</section>
 
+      <div class="filter-header">
+
+        <div>
+
+          <h2>
+            Investigate Opportunities
+          </h2>
+
+          <p>
+            Filter procurement opportunities by supplier,
+            material and priority.
+          </p>
+
+        </div>
+
+
+        <button
+          id="clearFilters"
+          class="clear-filter"
+        >
+          Clear Filters
+        </button>
+
+      </div>
+
+
+      <div class="filter-controls">
+
+
+        <!-- Supplier Filter -->
+
+        <div class="filter-group">
+
+          <label for="supplierFilter">
+            Supplier
+          </label>
+
+          <select id="supplierFilter">
+
+            <option value="ALL">
+              All Suppliers
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- Material Filter -->
+
+        <div class="filter-group">
+
+          <label for="materialFilter">
+            Material
+          </label>
+
+          <select id="materialFilter">
+
+            <option value="ALL">
+              All Materials
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- Priority Filter -->
+
+        <div class="filter-group">
+
+          <label for="priorityFilter">
+            Priority
+          </label>
+
+          <select id="priorityFilter">
+
+            <option value="ALL">
+              All Priorities
+            </option>
+
+            <option value="HIGH">
+              High
+            </option>
+
+            <option value="MEDIUM">
+              Medium
+            </option>
+
+            <option value="LOW">
+              Low
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </section>
 
 
     <!-- =========================================
@@ -375,11 +375,9 @@
 
     <section class="opportunities">
 
-
       <h2>
         Priority Opportunities
       </h2>
-
 
       <p class="section-description">
         Procurement opportunities ranked by
@@ -400,7 +398,6 @@
               Upload data to find opportunities
             </h3>
 
-
             <p>
               ProcureIQ will identify price
               variance, prioritize investigations
@@ -411,9 +408,7 @@
 
         </div>
 
-
       </div>
-
 
     </section>
 
@@ -421,12 +416,16 @@
   </main>
 
 
-
   <!-- =========================================
        JAVASCRIPT
   ========================================== -->
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- SheetJS: CSV + XLS + XLSX support -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"
+  ></script>
+
   <script src="script.js"></script>
 
 

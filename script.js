@@ -1,6 +1,26 @@
+/* =====================================================
+   PROCUREIQ FRONTEND
+   CSV + XLSX + XLS
+===================================================== */
+
+
+/* =====================================================
+   DOM ELEMENTS
+===================================================== */
+
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("csvFile");
 const status = document.getElementById("uploadStatus");
+
+const totalSpendElement = document.getElementById("totalSpend");
+const transactionsElement = document.getElementById("transactions");
+const opportunitiesElement = document.getElementById("opportunities");
+const savingsElement = document.getElementById("savings");
+
+
+/* =====================================================
+   GLOBAL STATE
+===================================================== */
 
 let data = [];
 
@@ -34,442 +54,282 @@ function escapeHTML(value) {
 }
 
 
+function cleanNumber(value) {
+  if (value === null || value === undefined) {
+    return NaN;
+  }
+
+  return Number(
+    String(value)
+      .replace(/,/g, "")
+      .replace(/[₹$€£]/g, "")
+      .trim()
+  );
+}
+
+
+function normalizeHeader(header) {
+  return String(header ?? "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[_-]+/g, " ");
+}
+
+
+function findColumn(row, possibleNames) {
+  const keys = Object.keys(row);
+
+  for (const name of possibleNames) {
+    const normalizedTarget = normalizeHeader(name);
+
+    const found = keys.find(
+      key => normalizeHeader(key) === normalizedTarget
+    );
+
+    if (found !== undefined) {
+      return row[found];
+    }
+  }
+
+  return "";
+}
+
+
 /* =====================================================
-   LOAD DATA FROM POSTGRESQL
+   SHOW ERROR
 ===================================================== */
 
-async function loadDatabaseData() {
+function showError(message) {
+
+  console.error(message);
+
+  if (status) {
+    status.textContent = `❌ ${message}`;
+  }
+}
+
+
+/* =====================================================
+   FILE UPLOAD BUTTON
+===================================================== */
+
+if (uploadBtn) {
+
+  uploadBtn.addEventListener("click", handleFileUpload);
+
+}
+
+
+/* =====================================================
+   MAIN FILE UPLOAD FUNCTION
+===================================================== */
+
+async function handleFileUpload() {
+
+  if (!fileInput) {
+    showError("File input was not found.");
+    return;
+  }
+
+
+  const file = fileInput.files[0];
+
+
+  if (!file) {
+
+    showError(
+      "Please select a CSV or Excel file first."
+    );
+
+    return;
+  }
+
+
+  const extension =
+    file.name
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+
+  /* ---------------------------------------------
+     SUPPORTED FILE TYPES
+  --------------------------------------------- */
+
+  if (!["csv", "xlsx", "xls"].includes(extension)) {
+
+    showError(
+      "Unsupported file format. Please upload CSV, XLSX or XLS."
+    );
+
+    return;
+  }
+
 
   try {
 
-    if (status) {
-      status.textContent =
-        "Loading procurement data from PostgreSQL...";
-    }
+    if (uploadBtn) {
 
-    const response =
-      await fetch("/api/transactions", {
-        method: "GET",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Server returned ${response.status}`
-      );
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = "Analyzing...";
 
     }
-
-
-    const result =
-      await response.json();
-
-
-    data =
-      Array.isArray(result)
-        ? result
-        : [];
-
-
-    analyzeData();
 
 
     if (status) {
 
       status.textContent =
-        `Loaded ${data.length} transactions from PostgreSQL.`;
+        `Reading ${file.name}...`;
 
     }
 
-  }
 
-  catch (error) {
-
-    console.error(
-      "PostgreSQL Error:",
-      error
-    );
+    let transactions = [];
 
 
-    if (status) {
+    /* =================================================
+       CSV
+    ================================================= */
 
-      status.textContent =
-        `Unable to load procurement data: ${error.message}`;
+    if (extension === "csv") {
+
+      const text = await file.text();
+
+      transactions = parseCSVFile(text);
 
     }
 
-  }
 
-}
+    /* =================================================
+       XLS / XLSX
+    ================================================= */
 
+    else {
 
-/* =====================================================
-   CSV UPLOAD
-===================================================== */
+      if (typeof XLSX === "undefined") {
 
-uploadBtn?.addEventListener(
-  "click",
-  handleCSVUpload
-);
-
-
-
-
-  async function handleCSVUpload() {
-    const fileInput = document.getElementById("csvFile");
-    const file = fileInput.files[0];
-
-    if (!file) {
-        showError("Please select a file first.");
-        return;
-    }
-
-    const extension = file.name.split(".").pop().toLowerCase();
-
-    if (!["csv", "xlsx", "xls"].includes(extension)) {
-        showError("Unsupported file format. Please upload CSV or Excel (.xlsx/.xls).");
-        return;
-    }
-
-    try {
-        let transactions = [];
-
-        // ================================
-        // CSV
-        // ================================
-        if (extension === "csv") {
-            const text = await file.text();
-
-            transactions = parseCSV(text);
-        }
-
-        // ================================
-        // EXCEL
-        // ================================
-        else {
-            if (typeof XLSX === "undefined") {
-                throw new Error("Excel library failed to load.");
-            }
-
-            const arrayBuffer = await file.arrayBuffer();
-
-            const workbook = XLSX.read(arrayBuffer, {
-                type: "array"
-            });
-
-            if (!workbook.SheetNames.length) {
-                throw new Error("Excel file contains no worksheets.");
-            }
-
-            const firstSheet =
-                workbook.Sheets[workbook.SheetNames[0]];
-
-            const rows = XLSX.utils.sheet_to_json(firstSheet, {
-                defval: ""
-            });
-
-            transactions = rows.map(row => ({
-                material:
-                    row.material ??
-                    row.Material ??
-                    row.MATERIAL ??
-                    row["Material Name"] ??
-                    "",
-
-                supplier:
-                    row.supplier ??
-                    row.Supplier ??
-                    row.SUPPLIER ??
-                    row["Supplier Name"] ??
-                    "",
-
-                quantity:
-                    row.quantity ??
-                    row.Quantity ??
-                    row.QUANTITY ??
-                    "",
-
-                price:
-                    row.price ??
-                    row.Price ??
-                    row.PRICE ??
-                    row["Unit Price"] ??
-                    ""
-            }));
-        }
-
-        // ================================
-        // VALIDATE
-        // ================================
-        if (!Array.isArray(transactions) || transactions.length === 0) {
-            throw new Error(
-                "No transaction data found in the file."
-            );
-        }
-
-        const validTransactions = transactions.filter(item => {
-            const material = String(item.material || "").trim();
-            const supplier = String(item.supplier || "").trim();
-
-            const quantity = Number(item.quantity);
-            const price = Number(item.price);
-
-            return (
-                material &&
-                supplier &&
-                Number.isFinite(quantity) &&
-                Number.isFinite(price) &&
-                quantity > 0 &&
-                price >= 0
-            );
-        });
-
-        if (validTransactions.length === 0) {
-            throw new Error(
-                "No valid transactions found. Required columns are: material, supplier, quantity and price."
-            );
-        }
-
-        // ================================
-        // SEND TO BACKEND
-        // ================================
-        const response = await fetch(
-            "/api/transactions/upload",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    transactions: validTransactions
-                })
-            }
+        throw new Error(
+          "Excel library failed to load. Please refresh the page."
         );
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.error ||
-                "Server returned an error."
-            );
-        }
-
-        // ================================
-        // SUCCESS
-        // ================================
-        alert(
-            `${result.inserted || 0} new transaction(s) added.\n` +
-            `${result.duplicates || 0} duplicate(s) skipped.`
-        );
-
-        // Refresh dashboard data
-        if (typeof loadDatabaseData === "function") {
-            await loadDatabaseData();
-        }
-
-        fileInput.value = "";
-
-    } catch (error) {
-
-        console.error("❌ File upload error:", error);
-
-        showError(
-            error.message ||
-            "Unable to process the uploaded file."
-        );
-    }
-}
+      }
 
 
-  
-    /* ---------------------------------------------
-       PARSE CSV
-    --------------------------------------------- */
-
-    const csvData =
-      parseCSV(text);
+      const arrayBuffer =
+        await file.arrayBuffer();
 
 
-    if (!csvData.length) {
-
-      throw new Error(
-        "No transactions found in CSV."
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       VALIDATE REQUIRED COLUMNS
-    --------------------------------------------- */
-
-    const requiredHeaders = [
-      "material",
-      "supplier",
-      "quantity",
-      "price"
-    ];
-
-
-    const headers =
-      Object.keys(csvData[0]);
-
-
-    const missingHeaders =
-      requiredHeaders.filter(
-        header =>
-          !headers.includes(header)
-      );
-
-
-    if (missingHeaders.length) {
-
-      throw new Error(
-        `Missing columns: ${missingHeaders.join(", ")}`
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       VALIDATE TRANSACTIONS
-    --------------------------------------------- */
-
-    const validData =
-      csvData
-
-        .map(item => {
-
-          const material =
-            String(
-              item.material || ""
-            ).trim();
-
-
-          const supplier =
-            String(
-              item.supplier || ""
-            ).trim();
-
-
-          const quantity =
-            Number(
-              String(
-                item.quantity || ""
-              )
-              .replace(/,/g, "")
-              .trim()
-            );
-
-
-          const price =
-            Number(
-              String(
-                item.price || ""
-              )
-              .replace(/,/g, "")
-              .replace(/[₹$]/g, "")
-              .trim()
-            );
-
-
-          return {
-            ...item,
-
-            material,
-
-            supplier,
-
-            quantity,
-
-            price
-          };
-
-        })
-
-        .filter(item => {
-
-          return (
-
-            item.material &&
-
-            item.supplier &&
-
-            Number.isFinite(item.quantity) &&
-
-            Number.isFinite(item.price) &&
-
-            item.quantity > 0 &&
-
-            item.price >= 0
-
-          );
-
+      const workbook =
+        XLSX.read(arrayBuffer, {
+          type: "array"
         });
 
 
-    if (!validData.length) {
+      if (
+        !workbook.SheetNames ||
+        workbook.SheetNames.length === 0
+      ) {
+
+        throw new Error(
+          "The Excel file contains no worksheets."
+        );
+
+      }
+
+
+      const firstSheet =
+        workbook.Sheets[
+          workbook.SheetNames[0]
+        ];
+
+
+      const rows =
+        XLSX.utils.sheet_to_json(
+          firstSheet,
+          {
+            defval: ""
+          }
+        );
+
+
+      if (!rows.length) {
+
+        throw new Error(
+          "The Excel worksheet is empty."
+        );
+
+      }
+
+
+      transactions =
+        convertExcelRows(rows);
+
+    }
+
+
+    /* =================================================
+       VALIDATE DATA
+    ================================================= */
+
+    const validation =
+      validateTransactions(transactions);
+
+
+    if (validation.valid.length === 0) {
 
       throw new Error(
-        "No valid transactions found. Check material, supplier, quantity and price values."
+        "No valid transactions found. Required columns: material, supplier, quantity and price."
       );
 
     }
+
+
+    const validTransactions =
+      validation.valid;
 
 
     const invalidCount =
-      csvData.length -
-      validData.length;
+      validation.invalid;
 
 
     if (status) {
 
       status.textContent =
-        `Validated ${validData.length} transaction(s).`;
+        `Found ${validTransactions.length} valid transaction(s). Uploading to database...`;
 
     }
 
 
-    /* ---------------------------------------------
-       SAVE TO POSTGRESQL
-    --------------------------------------------- */
-
-    if (status) {
-
-      status.textContent =
-        "Checking database for duplicates...";
-
-    }
-
+    /* =================================================
+       SEND TO BACKEND
+    ================================================= */
 
     const response =
       await fetch(
         "/api/transactions/upload",
         {
-
           method: "POST",
 
           headers: {
-            "Content-Type":
-              "application/json",
-
-            "Accept":
-              "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
 
-          body:
-            JSON.stringify({
-              transactions:
-                validData
-            })
-
+          body: JSON.stringify({
+            transactions: validTransactions
+          })
         }
       );
+
+
+    /* =================================================
+       READ SERVER RESPONSE
+    ================================================= */
+
+    const responseText =
+      await response.text();
 
 
     let result;
@@ -478,45 +338,55 @@ uploadBtn?.addEventListener(
     try {
 
       result =
-        await response.json();
+        JSON.parse(responseText);
 
     }
 
-    catch {
+    catch (jsonError) {
+
+      console.error(
+        "Invalid server response:",
+        responseText
+      );
 
       throw new Error(
-        "Server returned an invalid response."
+        `Server returned an invalid response (${response.status}).`
       );
 
     }
 
+
+    /* =================================================
+       SERVER ERROR
+    ================================================= */
 
     if (!response.ok) {
 
       throw new Error(
         result.error ||
-        "Upload failed."
+        result.message ||
+        `Upload failed with status ${response.status}.`
       );
 
     }
 
 
-    /* ---------------------------------------------
-       RELOAD DATABASE
-    --------------------------------------------- */
+    /* =================================================
+       SUCCESS
+    ================================================= */
 
-    await loadDatabaseData();
+    const inserted =
+      Number(result.inserted) || 0;
 
+    const duplicates =
+      Number(result.duplicates) || 0;
 
-    /* ---------------------------------------------
-       SUCCESS MESSAGE
-    --------------------------------------------- */
 
     if (status) {
 
       status.textContent =
-        `✅ ${result.inserted || 0} new transaction(s) added. ` +
-        `${result.duplicates || 0} duplicate(s) skipped.` +
+        `✅ ${inserted} new transaction(s) added. ` +
+        `${duplicates} duplicate(s) skipped.` +
         (
           invalidCount > 0
             ? ` ${invalidCount} invalid row(s) ignored.`
@@ -526,24 +396,43 @@ uploadBtn?.addEventListener(
     }
 
 
-    if (fileInput) {
-      fileInput.value = "";
-    }
+    /* =================================================
+       LOAD UPDATED DATABASE
+    ================================================= */
+
+    await loadDatabaseData();
+
+
+    /* =================================================
+       RESET FILE INPUT
+    ================================================= */
+
+    fileInput.value = "";
+
 
   }
 
   catch (error) {
 
     console.error(
-      "CSV Upload Error:",
+      "❌ File upload error:",
       error
     );
 
 
-    if (status) {
+    showError(
+      error.message ||
+      "Unable to process the uploaded file."
+    );
 
-      status.textContent =
-        `❌ CSV Error: ${error.message}`;
+  }
+
+  finally {
+
+    if (uploadBtn) {
+
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Analyze File";
 
     }
 
@@ -553,53 +442,147 @@ uploadBtn?.addEventListener(
 
 
 /* =====================================================
-   READ CSV FILE
+   CONVERT EXCEL ROWS
 ===================================================== */
 
-function readCSVFile(file) {
+function convertExcelRows(rows) {
 
-  return new Promise(
-    (resolve, reject) => {
+  return rows.map(row => {
 
-      const reader =
-        new FileReader();
+    return {
 
+      material: findColumn(
+        row,
+        [
+          "material",
+          "material name",
+          "material_name"
+        ]
+      ),
 
-      reader.onload =
-        event => {
+      supplier: findColumn(
+        row,
+        [
+          "supplier",
+          "supplier name",
+          "supplier_name"
+        ]
+      ),
 
-          resolve(
-            event.target.result
-          );
+      quantity: findColumn(
+        row,
+        [
+          "quantity",
+          "qty"
+        ]
+      ),
 
-        };
+      price: findColumn(
+        row,
+        [
+          "price",
+          "unit price",
+          "unit_price"
+        ]
+      )
 
+    };
 
-      reader.onerror =
-        () => {
-
-          reject(
-            new Error(
-              "Unable to read CSV file."
-            )
-          );
-
-        };
-
-
-      reader.readAsText(file);
-
-    }
-  );
+  });
 
 }
 
 
 /* =====================================================
-   ROBUST CSV PARSER
+   VALIDATE TRANSACTIONS
 ===================================================== */
 
-function parseCSV(text) {
+function validateTransactions(transactions) {
+
+  const valid = [];
+
+  let invalid = 0;
+
+
+  if (!Array.isArray(transactions)) {
+
+    return {
+      valid: [],
+      invalid: 0
+    };
+
+  }
+
+
+  transactions.forEach(item => {
+
+    const material =
+      String(item.material || "").trim();
+
+
+    const supplier =
+      String(item.supplier || "").trim();
+
+
+    const quantity =
+      cleanNumber(item.quantity);
+
+
+    const price =
+      cleanNumber(item.price);
+
+
+    if (
+
+      !material ||
+
+      !supplier ||
+
+      !Number.isFinite(quantity) ||
+
+      !Number.isFinite(price) ||
+
+      quantity <= 0 ||
+
+      price < 0
+
+    ) {
+
+      invalid++;
+
+      return;
+
+    }
+
+
+    valid.push({
+
+      material,
+
+      supplier,
+
+      quantity,
+
+      price
+
+    });
+
+  });
+
+
+  return {
+    valid,
+    invalid
+  };
+
+}
+
+
+/* =====================================================
+   CSV PARSER
+===================================================== */
+
+function parseCSVFile(text) {
 
   const rows = [];
 
@@ -624,7 +607,7 @@ function parseCSV(text) {
 
 
     /* ---------------------------------------------
-       QUOTED VALUE
+       QUOTES
     --------------------------------------------- */
 
     if (char === '"') {
@@ -677,11 +660,14 @@ function parseCSV(text) {
     --------------------------------------------- */
 
     if (
+
       (
         char === "\n" ||
         char === "\r"
       ) &&
+
       !insideQuotes
+
     ) {
 
       if (
@@ -698,13 +684,14 @@ function parseCSV(text) {
         value.trim()
       );
 
+
       value = "";
 
 
       if (
         row.some(
           cell =>
-            cell !== ""
+            String(cell).trim() !== ""
         )
       ) {
 
@@ -744,7 +731,7 @@ function parseCSV(text) {
   if (
     row.some(
       cell =>
-        cell !== ""
+        String(cell).trim() !== ""
     )
   ) {
 
@@ -767,10 +754,8 @@ function parseCSV(text) {
   const headers =
     rows[0].map(
       header =>
-        String(header)
-          .trim()
-          .toLowerCase()
-          .replace(/^\uFEFF/, "")
+        normalizeHeader(header)
+          .replace(/ /g, "_")
     );
 
 
@@ -789,14 +774,35 @@ function parseCSV(text) {
         (header, index) => {
 
           object[header] =
-            values[index] ??
-            "";
+            values[index] ?? "";
 
         }
       );
 
 
-      return object;
+      return {
+
+        material:
+          object.material ||
+          object.material_name ||
+          "",
+
+        supplier:
+          object.supplier ||
+          object.supplier_name ||
+          "",
+
+        quantity:
+          object.quantity ||
+          object.qty ||
+          "",
+
+        price:
+          object.price ||
+          object.unit_price ||
+          ""
+
+      };
 
     });
 
@@ -804,31 +810,104 @@ function parseCSV(text) {
 
 
 /* =====================================================
-   ANALYZE PROCUREMENT DATA
+   LOAD DATA FROM POSTGRESQL
+===================================================== */
+
+async function loadDatabaseData() {
+
+  try {
+
+    if (status) {
+
+      status.textContent =
+        "Loading procurement data from PostgreSQL...";
+
+    }
+
+
+    const response =
+      await fetch(
+        "/api/transactions",
+        {
+          method: "GET",
+
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        `Server returned ${response.status}`
+      );
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    data =
+      Array.isArray(result)
+        ? result
+        : [];
+
+
+    analyzeData();
+
+
+    if (status) {
+
+      status.textContent =
+        `Loaded ${data.length} transaction(s) from PostgreSQL.`;
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "PostgreSQL Error:",
+      error
+    );
+
+
+    if (status) {
+
+      status.textContent =
+        `Unable to load procurement data: ${error.message}`;
+
+    }
+
+  }
+
+}
+
+
+/* =====================================================
+   ANALYZE DATA
 ===================================================== */
 
 function analyzeData() {
 
   if (!data.length) {
 
-    document.getElementById(
-      "totalSpend"
-    ).textContent = "₹0";
+    if (totalSpendElement)
+      totalSpendElement.textContent = "₹0";
 
+    if (transactionsElement)
+      transactionsElement.textContent = "0";
 
-    document.getElementById(
-      "transactions"
-    ).textContent = "0";
+    if (opportunitiesElement)
+      opportunitiesElement.textContent = "0";
 
-
-    document.getElementById(
-      "opportunities"
-    ).textContent = "0";
-
-
-    document.getElementById(
-      "savings"
-    ).textContent = "₹0";
+    if (savingsElement)
+      savingsElement.textContent = "₹0";
 
 
     window.procurementOpportunities = [];
@@ -849,34 +928,32 @@ function analyzeData() {
   }
 
 
-  /* ---------------------------------------------
+  /* =================================================
      TOTAL SPEND
-  --------------------------------------------- */
+  ================================================= */
 
   const totalSpend =
     data.reduce(
       (sum, item) => {
 
         const quantity =
-          Number(item.quantity) || 0;
+          cleanNumber(item.quantity) || 0;
 
         const price =
-          Number(item.price) || 0;
+          cleanNumber(item.price) || 0;
 
 
-        return (
-          sum +
-          quantity * price
-        );
+        return sum +
+          quantity * price;
 
       },
       0
     );
 
 
-  /* ---------------------------------------------
+  /* =================================================
      GROUP BY MATERIAL
-  --------------------------------------------- */
+  ================================================= */
 
   const groups = {};
 
@@ -890,6 +967,21 @@ function analyzeData() {
       ).trim();
 
 
+    const supplier =
+      String(
+        item.supplier ||
+        "Unknown Supplier"
+      ).trim();
+
+
+    const price =
+      cleanNumber(item.price) || 0;
+
+
+    const quantity =
+      cleanNumber(item.quantity) || 0;
+
+
     if (!groups[material]) {
 
       groups[material] = [];
@@ -899,30 +991,26 @@ function analyzeData() {
 
     groups[material].push({
 
-      price:
-        Number(item.price) || 0,
+      material,
 
-      quantity:
-        Number(item.quantity) || 0,
+      supplier,
 
-      supplier:
-        String(
-          item.supplier ||
-          "Unknown Supplier"
-        ).trim()
+      price,
+
+      quantity
 
     });
 
   });
 
 
-  /* ---------------------------------------------
-     OPPORTUNITIES
-  --------------------------------------------- */
+  /* =================================================
+     CALCULATE OPPORTUNITIES
+  ================================================= */
 
-  let opportunities = 0;
+  let opportunityCount = 0;
 
-  let savings = 0;
+  let totalSavings = 0;
 
 
   Object.values(groups).forEach(
@@ -934,8 +1022,7 @@ function analyzeData() {
       const minPrice =
         Math.min(
           ...items.map(
-            item =>
-              item.price
+            item => item.price
           )
         );
 
@@ -947,10 +1034,10 @@ function analyzeData() {
           minPrice
         ) {
 
-          opportunities++;
+          opportunityCount++;
 
 
-          savings +=
+          totalSavings +=
             (
               item.price -
               minPrice
@@ -965,37 +1052,45 @@ function analyzeData() {
   );
 
 
-  /* ---------------------------------------------
-     UPDATE DASHBOARD
-  --------------------------------------------- */
+  /* =================================================
+     UPDATE KPI
+  ================================================= */
 
-  document.getElementById(
-    "totalSpend"
-  ).textContent =
-    formatCurrency(totalSpend);
+  if (totalSpendElement) {
 
+    totalSpendElement.textContent =
+      formatCurrency(totalSpend);
 
-  document.getElementById(
-    "transactions"
-  ).textContent =
-    data.length;
+  }
 
 
-  document.getElementById(
-    "opportunities"
-  ).textContent =
-    opportunities;
+  if (transactionsElement) {
+
+    transactionsElement.textContent =
+      data.length.toLocaleString("en-IN");
+
+  }
 
 
-  document.getElementById(
-    "savings"
-  ).textContent =
-    formatCurrency(savings);
+  if (opportunitiesElement) {
+
+    opportunitiesElement.textContent =
+      opportunityCount.toLocaleString("en-IN");
+
+  }
 
 
-  /* ---------------------------------------------
-     ANALYTICS
-  --------------------------------------------- */
+  if (savingsElement) {
+
+    savingsElement.textContent =
+      formatCurrency(totalSavings);
+
+  }
+
+
+  /* =================================================
+     OTHER SECTIONS
+  ================================================= */
 
   showOpportunities(groups);
 
@@ -1028,8 +1123,7 @@ function showOpportunities(groups) {
       const minPrice =
         Math.min(
           ...items.map(
-            item =>
-              item.price
+            item => item.price
           )
         );
 
@@ -1071,17 +1165,13 @@ function showOpportunities(groups) {
         let priority;
 
 
-        if (
-          variance >= 20
-        ) {
+        if (variance >= 20) {
 
           priority = "HIGH";
 
         }
 
-        else if (
-          variance >= 10
-        ) {
+        else if (variance >= 10) {
 
           priority = "MEDIUM";
 
@@ -1265,9 +1355,11 @@ function renderFilteredOpportunities() {
               </strong>
 
               paid
+
               ${formatCurrency(item.price)}/unit.
 
               Lowest observed price is
+
               ${formatCurrency(item.minPrice)}/unit.
 
             </p>
@@ -1329,8 +1421,7 @@ function renderFilteredOpportunities() {
 
 
 /* =====================================================
-   AI BUTTON EVENT DELEGATION
-   More reliable for dynamically created buttons
+   AI BUTTON EVENT
 ===================================================== */
 
 document.addEventListener(
@@ -1375,7 +1466,7 @@ document.addEventListener(
 
 
 /* =====================================================
-   GEMINI AI INSIGHT
+   AI INSIGHT
 ===================================================== */
 
 async function getAIInsight(
@@ -1392,21 +1483,8 @@ async function getAIInsight(
     document.getElementById(id);
 
 
-  if (!box) {
+  if (!box) return;
 
-    console.error(
-      "AI insight box not found:",
-      id
-    );
-
-    return;
-
-  }
-
-
-  /* ---------------------------------------------
-     VALIDATE INPUT
-  --------------------------------------------- */
 
   if (
     !material ||
@@ -1438,10 +1516,6 @@ async function getAIInsight(
   }
 
 
-  /* ---------------------------------------------
-     LOADING STATE
-  --------------------------------------------- */
-
   if (button) {
 
     button.disabled = true;
@@ -1471,22 +1545,6 @@ async function getAIInsight(
 
   try {
 
-    console.log(
-      "Sending AI request:",
-      {
-        material,
-        supplier,
-        price,
-        minPrice,
-        quantity
-      }
-    );
-
-
-    /* ---------------------------------------------
-       CALL BACKEND
-    --------------------------------------------- */
-
     const response =
       await fetch(
         "/api/insight",
@@ -1495,47 +1553,30 @@ async function getAIInsight(
           method: "POST",
 
           headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Accept":
-              "application/json"
-
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
 
-          body:
-            JSON.stringify({
+          body: JSON.stringify({
 
-              material,
+            material,
 
-              supplier,
+            supplier,
 
-              price,
+            price,
 
-              minPrice,
+            minPrice,
 
-              quantity
+            quantity
 
-            })
+          })
 
         }
       );
 
 
-    /* ---------------------------------------------
-       READ RESPONSE SAFELY
-    --------------------------------------------- */
-
     const responseText =
       await response.text();
-
-
-    console.log(
-      "AI server response:",
-      response.status,
-      responseText
-    );
 
 
     let result;
@@ -1559,10 +1600,6 @@ async function getAIInsight(
     }
 
 
-    /* ---------------------------------------------
-       SERVER ERROR
-    --------------------------------------------- */
-
     if (!response.ok) {
 
       throw new Error(
@@ -1573,10 +1610,6 @@ async function getAIInsight(
 
     }
 
-
-    /* ---------------------------------------------
-       CHECK INSIGHT
-    --------------------------------------------- */
 
     if (
       !result.insight ||
@@ -1589,10 +1622,6 @@ async function getAIInsight(
 
     }
 
-
-    /* ---------------------------------------------
-       DISPLAY AI RESPONSE
-    --------------------------------------------- */
 
     box.className =
       "ai-insight";
@@ -1611,7 +1640,6 @@ async function getAIInsight(
     `;
 
   }
-
 
   catch (error) {
 
@@ -1655,7 +1683,6 @@ async function getAIInsight(
 
   }
 
-
   finally {
 
     if (button) {
@@ -1673,7 +1700,7 @@ async function getAIInsight(
 
 
 /* =====================================================
-   RETRY AI BUTTON
+   RETRY AI
 ===================================================== */
 
 document.addEventListener(
@@ -1718,7 +1745,7 @@ document.addEventListener(
 
 
 /* =====================================================
-   FORMAT GEMINI RESPONSE
+   FORMAT AI RESPONSE
 ===================================================== */
 
 function formatAIResponse(text) {
@@ -1728,19 +1755,9 @@ function formatAIResponse(text) {
   }
 
 
-  /*
-   * IMPORTANT:
-   * Escape HTML FIRST so Gemini cannot inject HTML.
-   */
-
   let html =
     escapeHTML(text);
 
-
-  /* ---------------------------------------------
-     HEADINGS LIKE:
-     **1. Why investigate**
-  --------------------------------------------- */
 
   html =
     html.replace(
@@ -1749,22 +1766,12 @@ function formatAIResponse(text) {
     );
 
 
-  /* ---------------------------------------------
-     BOLD TEXT:
-     **Quality & Freight**
-  --------------------------------------------- */
-
   html =
     html.replace(
       /\*\*([^*]+)\*\*/g,
       "<strong>$1</strong>"
     );
 
-
-  /* ---------------------------------------------
-     BULLET:
-     * something
-  --------------------------------------------- */
 
   html =
     html.replace(
@@ -1773,21 +1780,12 @@ function formatAIResponse(text) {
     );
 
 
-  /* ---------------------------------------------
-     BULLET:
-     - something
-  --------------------------------------------- */
-
   html =
     html.replace(
       /^\s*-\s+/gm,
       '<span class="ai-bullet">•</span> '
     );
 
-
-  /* ---------------------------------------------
-     LINE BREAKS
-  --------------------------------------------- */
 
   html =
     html.replace(
@@ -1851,41 +1849,12 @@ function populateFilters(opportunities) {
     ].sort();
 
 
-  supplierFilter.innerHTML = "";
-
-  materialFilter.innerHTML = "";
-
-
-  const allSuppliers =
-    document.createElement(
-      "option"
-    );
-
-  allSuppliers.value =
-    "ALL";
-
-  allSuppliers.textContent =
-    "All Suppliers";
-
-  supplierFilter.appendChild(
-    allSuppliers
-  );
+  supplierFilter.innerHTML =
+    '<option value="ALL">All Suppliers</option>';
 
 
-  const allMaterials =
-    document.createElement(
-      "option"
-    );
-
-  allMaterials.value =
-    "ALL";
-
-  allMaterials.textContent =
-    "All Materials";
-
-  materialFilter.appendChild(
-    allMaterials
-  );
+  materialFilter.innerHTML =
+    '<option value="ALL">All Materials</option>';
 
 
   suppliers.forEach(
@@ -1989,7 +1958,7 @@ function applyFilters() {
 
 
 /* =====================================================
-   FILTER EVENT LISTENERS
+   FILTER EVENTS
 ===================================================== */
 
 document
@@ -2034,14 +2003,11 @@ document
     "click",
     () => {
 
-      activeSupplier =
-        "ALL";
+      activeSupplier = "ALL";
 
-      activeMaterial =
-        "ALL";
+      activeMaterial = "ALL";
 
-      activePriority =
-        "ALL";
+      activePriority = "ALL";
 
 
       const supplierFilter =
@@ -2113,9 +2079,11 @@ function showSupplierAnalysis() {
   if (!data.length) {
 
     container.innerHTML = `
+
       <p class="empty-message">
         No supplier data available.
       </p>
+
     `;
 
     return;
@@ -2129,16 +2097,22 @@ function showSupplierAnalysis() {
   data.forEach(item => {
 
     const supplier =
-      item.supplier ||
-      "Unknown Supplier";
+      String(
+        item.supplier ||
+        "Unknown Supplier"
+      ).trim();
 
 
     const quantity =
-      Number(item.quantity) || 0;
+      cleanNumber(
+        item.quantity
+      ) || 0;
 
 
     const price =
-      Number(item.price) || 0;
+      cleanNumber(
+        item.price
+      ) || 0;
 
 
     const spend =
@@ -2268,9 +2242,11 @@ function showMaterialAnalysis() {
   if (!data.length) {
 
     container.innerHTML = `
+
       <p class="empty-message">
         No material data available.
       </p>
+
     `;
 
     return;
@@ -2284,16 +2260,22 @@ function showMaterialAnalysis() {
   data.forEach(item => {
 
     const material =
-      item.material ||
-      "Unknown Material";
+      String(
+        item.material ||
+        "Unknown Material"
+      ).trim();
 
 
     const quantity =
-      Number(item.quantity) || 0;
+      cleanNumber(
+        item.quantity
+      ) || 0;
 
 
     const price =
-      Number(item.price) || 0;
+      cleanNumber(
+        item.price
+      ) || 0;
 
 
     const spend =
@@ -2429,9 +2411,11 @@ function showSupplierChart() {
   if (!data.length) {
 
     container.innerHTML = `
+
       <p class="empty-message">
         No supplier data available.
       </p>
+
     `;
 
     return;
@@ -2445,17 +2429,26 @@ function showSupplierChart() {
   data.forEach(item => {
 
     const supplier =
-      item.supplier ||
-      "Unknown Supplier";
+      String(
+        item.supplier ||
+        "Unknown Supplier"
+      ).trim();
+
+
+    const quantity =
+      cleanNumber(
+        item.quantity
+      ) || 0;
+
+
+    const price =
+      cleanNumber(
+        item.price
+      ) || 0;
 
 
     const spend =
-      (
-        Number(item.quantity) || 0
-      ) *
-      (
-        Number(item.price) || 0
-      );
+      quantity * price;
 
 
     if (!suppliers[supplier]) {
@@ -2565,9 +2558,11 @@ function showMaterialChart() {
   if (!data.length) {
 
     container.innerHTML = `
+
       <p class="empty-message">
         No material data available.
       </p>
+
     `;
 
     return;
@@ -2581,17 +2576,26 @@ function showMaterialChart() {
   data.forEach(item => {
 
     const material =
-      item.material ||
-      "Unknown Material";
+      String(
+        item.material ||
+        "Unknown Material"
+      ).trim();
+
+
+    const quantity =
+      cleanNumber(
+        item.quantity
+      ) || 0;
+
+
+    const price =
+      cleanNumber(
+        item.price
+      ) || 0;
 
 
     const spend =
-      (
-        Number(item.quantity) || 0
-      ) *
-      (
-        Number(item.price) || 0
-      );
+      quantity * price;
 
 
     if (!materials[material]) {
