@@ -1,0 +1,21 @@
+<svg width="520" height="132" viewBox="0 0 520 132" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pGradient" x1="12" y1="18" x2="108" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22B8F0"/>
+      <stop offset="1" stop-color="#1769FF"/>
+    </linearGradient>
+    <linearGradient id="qGradient" x1="410" y1="28" x2="478" y2="102" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27BDF2"/>
+      <stop offset="1" stop-color="#1769FF"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(6 10)">
+    <path d="M20 25C20 17.82 25.82 12 33 12H68C91.2 12 110 30.8 110 54C110 77.2 91.2 96 68 96H52V72H67C77 72 85 64 85 54C85 44 77 36 67 36H44V58H20V25Z" fill="url(#pGradient)"/>
+    <path d="M20 67L52 49V78L20 98V67Z" fill="#21B6F2"/>
+    <path d="M20 98L52 78V109L20 90V98Z" fill="#1769FF" opacity=".95"/>
+    <rect x="48" y="58" width="8" height="27" rx="2" fill="#0E4ED8" opacity=".85"/>
+    <rect x="61" y="49" width="8" height="36" rx="2" fill="#1769FF"/>
+  </g>
+  <text x="128" y="79" font-family="Inter, Arial, sans-serif" font-size="57" font-weight="700" letter-spacing="-2.2" fill="#F8FAFC">Procure</text>
+  <text x="340" y="79" font-family="Inter, Arial, sans-serif" font-size="57" font-weight="700" letter-spacing="-2.2" fill="url(#qGradient)">IQ</text>
+</svg>

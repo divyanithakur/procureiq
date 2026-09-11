@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#F4F5F9" name="theme-color"/>
+<meta content="ProcureIQ turns business spending data into smarter decisions and actionable savings opportunities." name="description"/>
+<title>ProcureIQ | Smarter Spending. Better Decisions.</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/style.css" rel="stylesheet"/>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head><body><section class="welcome-page" id="welcomePage">
+<div class="welcome-grid"></div>
+<div class="welcome-glow welcome-glow-one"></div>
+<div class="welcome-glow welcome-glow-two"></div>
+<nav class="welcome-nav">
+<a aria-label="ProcureIQ home" class="brand-link" href="#top">
+<img alt="ProcureIQ" class="brand-logo brand-logo-nav" src="/logo-dark.svg"/>
+</a>
+<div class="welcome-nav-links">
+<a href="#howItWorks">How it works</a>
+<a href="#whyProcureIQ">Why ProcureIQ</a>
+<a href="#contactSection">Contact</a>
+<button class="nav-sign-in" data-auth-sign-in="" id="navSignInBtn">Sign in</button>
+<button class="nav-create-account" data-auth-sign-up="" id="navCreateAccountBtn">Create account</button>
+<button class="nav-enter" data-auth-open="platform" id="navEnterBtn">Get started <span>→</span></button>
+</div>
+</nav>
+<div class="welcome-content" id="top">
+<div class="eyebrow"><span></span> PROCUREMENT INTELLIGENCE</div>
+<div class="hero-lockup">
+<h1><span>Turn spending data</span><span>into smarter decisions.</span></h1>
+<p class="welcome-description">
+          ProcureIQ helps finance and purchasing teams uncover unusual prices,
+          prioritize high-impact opportunities, and make better spending decisions.
+        </p>
+</div>
+<div class="welcome-actions">
+<button class="primary-cta primary-cta-large" data-auth-open="platform" id="enterDashboardBtn">
+          Get started <span>→</span>
+</button>
+<a class="secondary-cta" href="#howItWorks" id="viewProductBtn">
+          See how it works <span>↓</span>
+</a>
+</div>
+<div class="product-preview" aria-label="ProcureIQ workflow preview">
+<div class="product-preview-head"><span>PROCUREIQ WORKSPACE</span><strong>From file to decision</strong><small>One focused workflow for procurement review</small></div>
+<div class="product-preview-flow">
+<div class="preview-step is-complete"><span class="preview-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14"/></svg></span><strong>Upload</strong><small>Bring in purchasing data</small></div>
+<span class="preview-connector" aria-hidden="true"></span>
+<div class="preview-step is-complete"><span class="preview-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></span><strong>Analysis</strong><small>Compare observed prices</small></div>
+<span class="preview-connector" aria-hidden="true"></span>
+<div class="preview-step is-active"><span class="preview-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.2 5.2L20 10l-5.8 1.8L12 17l-2.2-5.2L4 10l5.8-1.8L12 3Zm6 12 .9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9L18 15Z"/></svg></span><strong>Opportunities</strong><small>Prioritize what matters</small></div>
+<span class="preview-connector" aria-hidden="true"></span>
+<div class="preview-step"><span class="preview-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><strong>Evidence</strong><small>Inspect the signal</small></div>
+<span class="preview-connector" aria-hidden="true"></span>
+<div class="preview-step"><span class="preview-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><strong>Decision</strong><small>Move with context</small></div>
+</div>
+</div>
+<div class="welcome-metrics">
+<div><strong>01</strong><span>Detect</span><small>Find price and supplier anomalies</small></div>
+<div><strong>02</strong><span>Prioritize</span><small>Rank what deserves attention first</small></div>
+<div><strong>03</strong><span>Act</span><small>Turn signals into validated savings</small></div>
+</div>
+</div>
+<section class="demo-video-section" id="demoVideoSection" aria-label="ProcureIQ product demo">
+  <div class="demo-video-inner">
+    <div class="eyebrow"><span></span> PRODUCT DEMO</div>
+    <h2>See ProcureIQ <span>in action.</span></h2>
+    <p class="demo-video-copy">A short walkthrough of how ProcureIQ turns purchasing data into clear, actionable decisions.</p>
+    <div class="demo-video-frame" id="demoVideoFrame">
+      <video id="procureIqDemoVideo" class="demo-video-player" controls playsinline preload="metadata">
+        <source id="procureIqDemoSource" src="" type="video/mp4"/>
+        Your browser does not support video playback.
+      </video>
+      <div class="demo-video-empty" id="demoVideoEmpty">
+        <div class="demo-play">▶</div>
+        <strong>Add your ProcureIQ demo video</strong>
+        <span>Use the button below to preview a video locally, or set the video source in the page before deployment.</span>
+        <label class="demo-video-upload">Choose demo video<input id="demoVideoInput" type="file" accept="video/*"/></label>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="pain-points-section" aria-label="Procurement pain points">
+<div class="section-intro">
+<div class="eyebrow"><span></span> THE PROCUREMENT PROBLEM</div>
+<h2>ERP shows what happened.<br/>ProcureIQ shows what matters.</h2>
+<p>Procurement teams already have the transactions. The hard part is knowing which exceptions deserve attention before time and money are lost.</p>
+</div>
+<div class="pain-points-grid">
+<article><span>01</span><strong>Hidden price leakage</strong><p>Comparable materials can be purchased at meaningfully different prices.</p></article>
+<article><span>02</span><strong>Too many transactions</strong><p>Teams cannot manually inspect thousands of purchase records every week.</p></article>
+<article><span>03</span><strong>Weak investigation context</strong><p>A price difference alone does not explain whether the purchase is actually wrong.</p></article>
+<article><span>04</span><strong>Savings without proof</strong><p>Potential savings need validation and a path from finding to realized value.</p></article>
+</div>
+</section>
+<section class="how-section" id="howItWorks">
+<div class="section-intro">
+<div class="eyebrow"><span></span> HOW IT WORKS</div>
+<h2>From raw purchases to<br/>clear actions.</h2>
+<p>ProcureIQ turns a spreadsheet full of transactions into a focused investigation queue — so your team spends less time searching and more time acting.</p>
+</div>
+<div class="process-grid">
+<article class="process-card">
+<div class="process-number">01</div>
+<div class="process-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14"/></svg></div>
+<h3>Upload your data</h3>
+<p>Bring in CSV, Excel or text-based PDF purchasing data without changing your existing workflow.</p>
+<span class="process-tag">CSV · XLS · XLSX · PDF</span>
+</article>
+<article class="process-card featured">
+<div class="process-number">02</div>
+<div class="process-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></div>
+<h3>Find what matters</h3>
+<p>Compare prices for the same materials, surface unusual differences, and estimate avoidable spend.</p>
+<span class="process-tag">Rules + analytics</span>
+</article>
+<article class="process-card">
+<div class="process-number">03</div>
+<div class="process-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></svg></div>
+<h3>Decide with context</h3>
+<p>Prioritize opportunities and use AI-generated explanations to guide the next investigation.</p>
+<span class="process-tag">Decision support</span>
+</article>
+</div>
+</section>
+<section class="why-section" id="whyProcureIQ">
+<div>
+<div class="eyebrow"><span></span> BUILT FOR BUSINESS TEAMS</div>
+<h2>Don't just report spend.<br/>Know where to look.</h2>
+</div>
+<div class="why-points">
+<div><strong>Actionable</strong><span>Focus teams on transactions that deserve attention.</span></div>
+<div><strong>Explainable</strong><span>Keep calculations transparent and use AI for context.</span></div>
+<div><strong>Practical</strong><span>Start with the files and purchasing data you already have.</span></div>
+</div>
+</section>
+<section class="contact-section" id="contactSection">
+<div>
+<div class="eyebrow"><span></span> CONTACT &amp; INQUIRIES</div>
+<h2>Have a question about<br/>ProcureIQ?</h2>
+<p>Talk to us about plans, product capabilities, enterprise requirements or support.</p>
+<div class="contact-details">
+<a href="tel:+919011492357"><strong>+91 90114 92357</strong><span>Phone</span></a>
+<a href="mailto:divyanigour2@gmail.com"><strong>divyanigour2@gmail.com</strong><span>Email</span></a>
+</div>
+</div>
+<form class="inquiry-form" id="inquiryForm">
+<label>Name<input name="name" placeholder="Your name" required=""/></label>
+<label>Work email<input name="email" placeholder="you@company.com" required="" type="email"/></label>
+<label>Inquiry<textarea name="message" placeholder="Tell us what you need help with..." required="" rows="4"></textarea></label>
+<button class="primary-cta" type="submit">Send Inquiry →</button>
+<p id="inquiryStatus" role="status"></p>
+</form>
+</section>
+<footer class="welcome-footer">
+<div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div>
+<div><span>Spend smarter. Operate better.</span><a href="mailto:divyanigour2@gmail.com">divyanigour2@gmail.com</a><a href="tel:+919011492357">+91 90114 92357</a></div>
+<div><a href="#contactSection">Contact &amp; Inquiries</a><span>© 2026 ProcureIQ</span></div>
+</footer>
+</section><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js"></script><script src="/script.js"></script><script>
+(function(){
+  const input=document.getElementById('demoVideoInput');
+  const video=document.getElementById('procureIqDemoVideo');
+  const source=document.getElementById('procureIqDemoSource');
+  const empty=document.getElementById('demoVideoEmpty');
+  if(!input||!video||!source||!empty) return;
+  input.addEventListener('change',function(){
+    const file=this.files&&this.files[0];
+    if(!file) return;
+    const url=URL.createObjectURL(file);
+    source.src=url;
+    video.load();
+    empty.classList.add('is-hidden');
+    video.classList.add('is-ready');
+  });
+})();
+</script>
+</body></html>

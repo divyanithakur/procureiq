@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#071B3A" name="theme-color"/>
+<meta content="ProcureIQ turns business spending data into smarter decisions and actionable savings opportunities." name="description"/>
+<title>Control | ProcureIQ</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/style.css" rel="stylesheet"/>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head><link href="/workspace.css" rel="stylesheet"/><body><div class="app-shell" id="appShell"><header class="app-header">
+<a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
+<img alt="ProcureIQ" class="app-logo" src="/logo.svg"/>
+</a>
+<div class="workspace-context"><span class="workspace-context-dot"></span><span>Procurement intelligence workspace</span></div>
+<button class="back-btn" id="backToWelcomeBtn" type="button">← Home</button>
+</header><aside aria-label="ProcureIQ workspace navigation" class="app-sidebar"><div class="sidebar-account-block">
+<button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
+<span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span><span class="dashboard-account-copy"><strong id="dashboardAccountName">Account</strong><small>Workspace account</small></span><span class="dashboard-account-chevron">⌄</span>
+</button>
+<div class="account-menu is-hidden" id="accountMenu"><div class="account-menu-profile account-menu-profile-clean"><div><strong id="accountMenuName">My account</strong><span id="accountMenuEmail">Signed-in workspace</span></div></div><div class="account-menu-divider"></div><button id="accountProfileBtn" type="button">Profile</button><button id="accountSettingsBtn" type="button">Settings</button><div class="account-menu-divider"></div><button class="account-signout" id="accountSignOutBtn" type="button">Log out</button></div>
+</div>
+<div class="sidebar-brand-caption">Procurement intelligence</div><div class="sidebar-label">WORKSPACE</div>
+<nav aria-label="Primary workspace" class="sidebar-nav">
+<a class="sidebar-link" data-page="overview" href="/workspace/overview"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 11 8-7 8 7v9H4v-9Zm5 9v-6h6v6"/></svg></span><span>Overview</span></a>
+<a class="sidebar-link" data-page="act" href="/workspace/act"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19 19 5m0 0h-7m7 0v7"/></svg></span><span>Opportunities</span></a>
+<a class="sidebar-link" data-page="analyze" href="/workspace/analyze"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></span><span>Analytics</span></a>
+<a class="sidebar-link" data-page="control" href="/workspace/control"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Risk &amp; Evidence</span></a>
+<a class="sidebar-link" data-page="reports" href="/workspace/reports"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Zm9 0v4h4M9 12h6M9 16h6M9 8h2"/></svg></span><span>Reports</span></a>
+</nav>
+<div class="sidebar-spacer"></div><div class="sidebar-label sidebar-support-label">ACCOUNT</div>
+<nav aria-label="Workspace support" class="sidebar-nav sidebar-nav-secondary">
+<a class="sidebar-link" data-page="billing" href="/workspace/billing"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4V7Zm3-3h10v3H7V4Zm0 8h10M7 16h5"/></svg></span><span>Plans &amp; Billing</span></a>
+<a class="sidebar-link" data-page="help" href="/workspace/help"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-.9.9-1.9 1.2-1.9 2.6M12 17h.01"/></svg></span><span>Help &amp; Support</span></a>
+</nav></aside><main class="workspace-main" id="dashboardOverview">
+<section class="page-frame product-page"><div class="page-heading"><div><span class="section-kicker">CONTROL</span><h1>Know your procurement risk.</h1><p>Exposure, trust and evidence.</p></div><div class="score-card"><span>CONTROL SCORE</span><strong id="v14ControlScore">—</strong><small>based on current workspace data</small></div></div>
+<div class="control-grid"><article class="control-card"><span class="feature-tag">DEPENDENCY</span><strong id="v14Dependency">—</strong><h2>Supplier exposure</h2><p id="v14DependencyCopy">Highest-spend supplier share.</p><a data-page="act" href="/workspace/act">Review alternatives →</a></article><article class="control-card"><span class="feature-tag">DATA TRUST</span><strong id="v14DataTrust">—</strong><h2>Data trust</h2><p>Completeness and comparability.</p><button id="v14DataTrustDetails" type="button">Inspect data quality →</button></article><article class="control-card"><span class="feature-tag">BLIND SPOTS</span><div class="blind-map"><span>Contracts</span><span>Market price</span><span>Competition</span><span>Dates</span></div><h2>Blind spots</h2><p>Keep missing context visible.</p><button id="v14BlindSpotDetails" type="button">See blind spots →</button></article><article class="control-card"><span class="feature-tag">EVIDENCE</span><div class="evidence-stack"><span>Transactions</span><span>Comparable prices</span><span>AI explanation</span></div><h2>Evidence trail</h2><p>Why the signal exists.</p><a data-page="control" href="/workspace/control">Inspect evidence trail →</a></article></div>
+<div class="detail-panel" id="v14ControlDetails"><div><span class="section-kicker">DETAIL ON DEMAND</span><h2>Detail when you need it.</h2><p>Reason, confidence and limits.</p></div><div class="detail-columns"><div><strong>Data trust</strong><span>Completeness · dates · supplier mapping · material coverage</span></div><div><strong>Blind spots</strong><span>Contract linkage · external benchmarks · competitive sourcing</span></div><div><strong>Evidence</strong><span>Rows used · comparison set · confidence · human action</span></div></div></div></section>
+<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="reports" href="/workspace/reports">Reports</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer></main></div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js"></script><script src="/script.js"></script><script>window.PROCUREIQ_PAGE="control";</script></body></html>

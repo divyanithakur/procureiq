@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#F7FAFD" name="theme-color"/>
+<meta content="ProcureIQ turns business spending data into smarter decisions and actionable savings opportunities." name="description"/>
+<title>Act | ProcureIQ</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/style.css" rel="stylesheet"/>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head><link href="/workspace.css" rel="stylesheet"/><body><div class="app-shell" id="appShell"><header class="app-header">
+<a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
+<img alt="ProcureIQ" class="app-logo" src="/logo.svg"/>
+</a>
+<div class="workspace-context"><span class="workspace-context-dot"></span><span>Procurement intelligence workspace</span></div>
+<button class="back-btn" id="backToWelcomeBtn" type="button">← Home</button>
+</header><aside aria-label="ProcureIQ workspace navigation" class="app-sidebar"><div class="sidebar-account-block">
+<button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
+<span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span><span class="dashboard-account-copy"><strong id="dashboardAccountName">Account</strong><small>Workspace account</small></span><span class="dashboard-account-chevron">⌄</span>
+</button>
+<div class="account-menu is-hidden" id="accountMenu"><div class="account-menu-profile account-menu-profile-clean"><div><strong id="accountMenuName">My account</strong><span id="accountMenuEmail">Signed-in workspace</span></div></div><div class="account-menu-divider"></div><button id="accountProfileBtn" type="button">Profile</button><button id="accountSettingsBtn" type="button">Settings</button><div class="account-menu-divider"></div><button class="account-signout" id="accountSignOutBtn" type="button">Log out</button></div>
+</div>
+<div class="sidebar-brand-caption">Procurement intelligence</div><div class="sidebar-label">WORKSPACE</div>
+<nav aria-label="Primary workspace" class="sidebar-nav">
+<a class="sidebar-link" data-page="overview" href="/workspace/overview"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 11 8-7 8 7v9H4v-9Zm5 9v-6h6v6"/></svg></span><span>Overview</span></a>
+<a class="sidebar-link" data-page="act" href="/workspace/act"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19 19 5m0 0h-7m7 0v7"/></svg></span><span>Opportunities</span></a>
+<a class="sidebar-link" data-page="analyze" href="/workspace/analyze"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></span><span>Analytics</span></a>
+<a class="sidebar-link" data-page="control" href="/workspace/control"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Risk &amp; Evidence</span></a>
+<a class="sidebar-link" data-page="reports" href="/workspace/reports"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Zm9 0v4h4M9 12h6M9 16h6M9 8h2"/></svg></span><span>Reports</span></a>
+</nav>
+<div class="sidebar-spacer"></div><div class="sidebar-label sidebar-support-label">ACCOUNT</div>
+<nav aria-label="Workspace support" class="sidebar-nav sidebar-nav-secondary">
+<a class="sidebar-link" data-page="billing" href="/workspace/billing"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4V7Zm3-3h10v3H7V4Zm0 8h10M7 16h5"/></svg></span><span>Plans &amp; Billing</span></a>
+<a class="sidebar-link" data-page="help" href="/workspace/help"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-.9.9-1.9 1.2-1.9 2.6M12 17h.01"/></svg></span><span>Help &amp; Support</span></a>
+</nav></aside><main class="workspace-main" id="dashboardOverview">
+<section class="page-frame product-page v18-opportunity-page">
+  <div class="page-heading"><div><span class="section-kicker">OPPORTUNITIES</span><h1>Review opportunities.</h1><p>Prioritized signals with evidence.</p></div><a class="secondary-btn" data-page="overview" href="/workspace/overview">← Overview</a></div>
+  <section class="v18-savings-journey work-card v19-secondary-tracker"><div><span class="section-kicker">SAVINGS TRACKER</span><h2>Savings progress</h2><p>Track value as it is validated.</p></div><div class="v18-pipeline"><div><span>Found</span><strong id="v14PotentialSavings">₹0</strong></div><i>→</i><div><span>Validated</span><strong id="v14ApprovedSavings">₹0</strong></div><i>→</i><div><span>Realized</span><strong id="v14RealizedSavings">₹0</strong></div></div></section>
+
+  <section class="work-card v18-queue-card">
+    <div class="v18-queue-top"><div><span class="section-kicker">INVESTIGATION QUEUE</span><h2>Priority queue</h2></div><div class="v18-queue-meta" id="opportunitySummary"></div></div>
+    <div class="v18-filter-row"><div class="filter-group"><label for="supplierFilter">Supplier</label><select id="supplierFilter"><option value="ALL">All suppliers</option></select></div><div class="filter-group"><label for="materialFilter">Material</label><select id="materialFilter"><option value="ALL">All materials</option></select></div><div class="filter-group"><label for="priorityFilter">Priority</label><select id="priorityFilter"><option value="ALL">All priorities</option><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option></select></div><button class="clear-filter" id="clearFilters" type="button">Clear</button></div>
+    <div id="opportunityList"><div class="opportunity-empty"><strong>Upload purchasing data first.</strong><span>Your ranked opportunities will appear here.</span></div></div>
+  </section>
+</section>
+<div class="opportunity-drawer" id="opportunityDrawer" aria-hidden="true"></div><div class="opportunity-modal" id="opportunityModal" aria-hidden="true"></div>
+<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="overview" href="/workspace/overview">Overview</a><a data-page="act" href="/workspace/act">Opportunities</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer>
+</main></div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js"></script><script src="/script.js"></script><script>window.PROCUREIQ_PAGE="act";</script></body></html>
