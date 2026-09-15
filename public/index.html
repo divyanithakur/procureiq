@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="alternate icon" href="/logo.svg">
+<meta name="description" content="ProcureIQ is a procurement intelligence platform that helps teams find unusual price and spend patterns, investigate exceptions and prioritize where to look first.">
+<title>ProcureIQ | Procurement Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="p27-site" id="top">
+  <header class="p27-nav">
+    <a class="p27-brand" href="#top" aria-label="ProcureIQ home"><span class="p27-logo-frame"><img src="/logo-dark.svg" alt="ProcureIQ"></span></a>
+    <nav class="p27-nav-links" aria-label="Main navigation">
+      <a href="#platform">Platform</a>
+      <a href="#how">How it works</a>
+      <a href="#demo">Demo</a>
+      <a href="#contactSection">Contact</a>
+      <button class="p27-nav-ghost" data-auth-sign-in id="navSignInBtn" type="button">Sign in</button>
+      <button class="p27-nav-primary" data-auth-open="platform" id="navEnterBtn" type="button">Open workspace <span>→</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="p27-hero">
+      <div class="p27-hero-copy">
+        <div class="p27-eyebrow">PROCUREMENT INTELLIGENCE</div>
+        <h1>Find the procurement exceptions that deserve attention first.</h1>
+        <p>ProcureIQ analyzes purchasing evidence to surface price variance, contract leakage, invoice exceptions and supplier risk — then helps teams investigate the evidence behind each signal.</p>
+        <div class="p27-actions">
+          <button class="p27-button p27-button-primary" data-auth-open="platform" id="enterDashboardBtn" type="button">Explore ProcureIQ <span>→</span></button>
+          <a class="p27-button p27-button-secondary" href="#platform" id="viewProductBtn">See the platform</a>
+        </div>
+        <div class="p27-trust"><span>Evidence-first</span><span>Deterministic calculations</span><span>Human approval for material actions</span></div>
+      </div>
+      <div class="p27-hero-card" aria-label="ProcureIQ workflow preview">
+        <div class="p27-card-label">DECISION WORKFLOW</div>
+        <div class="p27-card-title">From evidence to action</div>
+        <div class="p27-value"><span>1. Upload purchasing data</span><strong>Input</strong></div>
+        <div class="p27-value"><span>2. Validate price variance</span><strong>Review</strong></div>
+        <div class="p27-value"><span>3. Prioritize exceptions</span><strong>Action</strong></div>
+      </div>
+    </section>
+
+    <section class="p27-demo" id="demo">
+      <div class="p27-section-head compact">
+        <div><span class="p27-eyebrow dark">PRODUCT DEMO</span><h2>See ProcureIQ in action.</h2></div>
+        <p>Use this space for the ProcureIQ advertisement or product video.</p>
+      </div>
+      <div class="p27-video-shell">
+        <video class="p27-video" controls playsinline preload="metadata" poster="/logo.svg">
+          <source src="/procureiq-ad.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="p27-video-placeholder">
+          <span>PROCUREIQ</span>
+          <strong>Your advertisement video goes here</strong>
+          <small>Add <code>public/procureiq-ad.mp4</code> to replace this placeholder.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="p27-section" id="platform">
+      <div class="p27-section-head"><div><span class="p27-eyebrow dark">ONE PLATFORM · FOUR JOBS</span><h2>Built around procurement decisions.</h2></div><p>Focused modules. Clear evidence. Action without dashboard overload.</p></div>
+      <div class="p27-pillars">
+        <a href="/workspace/analyze" class="p27-pillar"><span>01</span><div><h3>Contract Recovery</h3><p>Find overpayment and missed rebate opportunities.</p></div><b>→</b></a>
+        <a href="/workspace/act" class="p27-pillar"><span>02</span><div><h3>3-Way Match</h3><p>Resolve PO, GRN and invoice discrepancies.</p></div><b>→</b></a>
+        <a href="/workspace/chat" class="p27-pillar"><span>03</span><div><h3>Guided Buying</h3><p>Turn ad-hoc requests into compliant RFQs.</p></div><b>→</b></a>
+        <a href="/workspace/control" class="p27-pillar"><span>04</span><div><h3>Supplier Risk</h3><p>Surface concentration and evidence gaps early.</p></div><b>→</b></a>
+      </div>
+    </section>
+
+    <section class="p27-workflow" id="how">
+      <div class="p27-workflow-copy"><span class="p27-eyebrow dark">HOW IT WORKS</span><h2>Find → investigate → act → measure.</h2><p>Upload purchasing evidence, inspect the evidence, record the decision and measure what happened next.</p></div>
+      <div class="p27-steps"><div><b>01</b><span>Ingest</span><small>Contracts and purchasing data.</small></div><div><b>02</b><span>Validate</span><small>Terms, quantities and prices.</small></div><div><b>03</b><span>Decide</span><small>Record what your team found.</small></div><div><b>04</b><span>Measure</span><small>Capture the outcome.</small></div></div>
+    </section>
+
+    <section class="p27-contact" id="contactSection">
+      <div><span class="p27-eyebrow dark">CONTACT</span><h2>Talk to the ProcureIQ team.</h2><p>Capabilities, plans or enterprise requirements.</p><div class="p27-contact-links"><a href="mailto:divyanigour2@gmail.com">divyanigour2@gmail.com</a><a href="tel:+919011492357">+91 90114 92357</a></div></div>
+      <form class="p27-form" id="inquiryForm"><label>Name<input name="name" placeholder="Your name" required></label><label>Work email<input name="email" type="email" placeholder="you@company.com" required></label><label>Message<textarea name="message" rows="4" placeholder="What would you like to explore?" required></textarea></label><button class="p27-button p27-button-primary" type="submit">Send inquiry <span>→</span></button><p id="inquiryStatus" role="status"></p></form>
+    </section>
+  </main>
+<script>
+  (() => {
+    const video = document.querySelector('.p27-video');
+    const placeholder = document.querySelector('.p27-video-placeholder');
+    if (!video || !placeholder) return;
+    const showVideo = () => { video.style.opacity = '1'; placeholder.style.display = 'none'; };
+    const showPlaceholder = () => { video.style.opacity = '0'; placeholder.style.display = 'flex'; };
+    video.style.opacity = '0';
+    video.addEventListener('loadeddata', showVideo, { once: true });
+    video.addEventListener('error', showPlaceholder);
+    if (video.readyState >= 2) showVideo();
+  })();
+</script>
+
+  <footer class="p27-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><div><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#demo">Demo</a><a href="#contactSection">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© 2026 ProcureIQ</span></div></footer>
+</div>
+<script src="/auth.js?v=50"></script>
+<script src="/script.js?v=50"></script>
+</body>
+</html>

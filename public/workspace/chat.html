@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#FFFFFF" name="theme-color"/>
+<meta content="ProcureIQ turns business spending data into smarter decisions and actionable savings opportunities." name="description"/>
+<title>Guided Buying | ProcureIQ</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/style.css" rel="stylesheet"/>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="alternate icon" href="/logo.svg">
+</head><link href="/workspace.css?v=55" rel="stylesheet"/><body><div class="app-shell" id="appShell"><header class="app-header">
+<a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
+<img alt="ProcureIQ" class="app-logo" src="/logo.svg"/>
+</a>
+<div class="workspace-context"><span class="workspace-context-dot"></span><span>Procurement intelligence workspace</span></div>
+<button class="back-btn" id="backToWelcomeBtn" type="button">← Home</button>
+</header><aside aria-label="ProcureIQ workspace navigation" class="app-sidebar"><div class="sidebar-account-block">
+<button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
+<span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span><span class="dashboard-account-copy"><strong id="dashboardAccountName">Account</strong><small>Workspace account</small></span><span class="dashboard-account-chevron">⌄</span>
+</button>
+<div class="account-menu is-hidden" id="accountMenu"><div class="account-menu-profile account-menu-profile-clean"><div><strong id="accountMenuName">My account</strong><span id="accountMenuEmail">Signed-in workspace</span></div></div><div class="account-menu-divider"></div><button id="accountProfileBtn" type="button">Profile</button><button id="accountSettingsBtn" type="button">Settings</button><div class="account-menu-divider"></div><button class="account-signout" id="accountSignOutBtn" type="button">Log out</button></div>
+</div>
+<div class="sidebar-brand-caption">Procurement intelligence</div><div class="sidebar-label">WORKSPACE</div>
+<nav aria-label="Primary workspace" class="sidebar-nav">
+<a class="sidebar-link" data-page="overview" href="/workspace/overview"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 11 8-7 8 7v9H4v-9Zm5 9v-6h6v6"/></svg></span><span>Overview</span></a>
+<a class="sidebar-link" data-page="act" href="/workspace/act"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19 19 5m0 0h-7m7 0v7"/></svg></span><span>Exception Resolver</span></a>
+<a class="sidebar-link" data-page="analyze" href="/workspace/analyze"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></span><span>Contract Recovery</span></a>
+<a class="sidebar-link" data-page="chat" href="/workspace/chat"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Guided Buying</span></a>
+<a class="sidebar-link" data-page="control" href="/workspace/control"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Supplier Risk</span></a>
+<a class="sidebar-link" data-page="reports" href="/workspace/reports"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Zm9 0v4h4M9 12h6M9 16h6M9 8h2"/></svg></span><span>Reports</span></a>
+</nav>
+<div class="sidebar-spacer"></div><div class="sidebar-label sidebar-support-label">ACCOUNT</div>
+<nav aria-label="Workspace support" class="sidebar-nav sidebar-nav-secondary">
+<a class="sidebar-link" data-page="billing" href="/workspace/billing"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4V7Zm3-3h10v3H7V4Zm0 8h10M7 16h5"/></svg></span><span>Plans &amp; Billing</span></a>
+<a class="sidebar-link" data-page="help" href="/workspace/help"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-.9.9-1.9 1.2-1.9 2.6M12 17h.01"/></svg></span><span>Help &amp; Support</span></a>
+</nav></aside>
+<main class="workspace-main" id="dashboardOverview">
+<section class="page-frame product-page feature-page">
+  <div class="page-heading feature-heading">
+    <div><span class="section-kicker">PILLAR 03 · TAIL SPEND</span><h1>Guided Buying &amp; Micro-Tendering</h1>
+    <p>Turn an ad-hoc request into a compliant buying decision without inventing vendor quotes.</p></div>
+    <div class="feature-outcome"><span>Primary outcome</span><strong>Control tail spend</strong><small>Recommendations use internal evidence when available.</small></div>
+  </div>
+
+  <section class="feature-grid-2">
+    <article class="work-card feature-card-large">
+      <div class="section-header"><div><span class="section-kicker">REQUEST INTAKE</span><h2>Describe what you need</h2><p>ProcureIQ will structure the request before proposing an RFQ.</p></div></div>
+      <div class="form-grid compact">
+        <label>Item / requirement<input id="buyItem" type="text" placeholder="20 ergonomic office chairs"></label>
+        <label>Quantity<input id="buyQty" type="number" min="1" step="1" placeholder="20"></label>
+        <label>Target budget (optional)<input id="buyBudget" type="number" min="0" step="0.01" placeholder="150000"></label>
+        <label>Required-by date (optional)<input id="buyDate" type="date"></label>
+      </div>
+      <label class="full-field">Requirements / specifications<textarea id="buySpecs" rows="4" placeholder="Example: adjustable lumbar support, black, 3-year warranty"></textarea></label>
+      <button class="primary-cta" id="generateRFQBtn" type="button">Structure purchase request →</button>
+      <p class="inline-status" id="buyStatus" aria-live="polite"></p>
+    </article>
+
+    <article class="work-card feature-card-large">
+      <div class="section-header"><div><span class="section-kicker">COMPLIANCE GATE</span><h2>Buying policy</h2><p>Every generated recommendation states what evidence it actually has.</p></div></div>
+      <div class="logic-list">
+        <div><span>01</span><strong>Catalog check</strong><small>Use known suppliers from your uploaded history where relevant.</small></div>
+        <div><span>02</span><strong>RFQ structure</strong><small>Generate a vendor-ready request with quantity, specification and deadline.</small></div>
+        <div><span>03</span><strong>Evidence boundary</strong><small>No fabricated vendor price, delivery promise or market benchmark.</small></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="work-card result-card" id="rfqResult" aria-live="polite">
+    <div class="result-empty"><span class="section-kicker">BUYING OUTPUT</span><h2>Describe the requirement to generate a structured RFQ.</h2><p>The output will be ready to send, but pricing and vendor claims will only appear when supported by your data.</p></div>
+  </section>
+
+  <section class="work-card"><div class="section-header"><div><span class="section-kicker">INTERNAL SUPPLIER EVIDENCE</span><h2>Known suppliers for this category</h2><p>Derived only from uploaded transactions.</p></div></div><div id="knownBuySuppliers" class="supplier-chip-list"><span class="empty-message">Upload purchasing data on Overview first.</span></div></section>
+</section>
+<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="overview" href="/workspace/overview">Overview</a><a data-page="reports" href="/workspace/reports">Reports</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer>
+</main>
+</div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js?v=55"></script><script src="/script.js?v=55"></script><script>window.PROCUREIQ_PAGE="chat";</script><script src="/core-features.js?v=55"></script><script>document.addEventListener("DOMContentLoaded",function(){const f=document.querySelector(".dashboard-footer");if(f&&!f.querySelector("[data-legal-links]")){const d=document.createElement("span");d.dataset.legalLinks="";d.innerHTML='<a href="/privacy">Privacy Policy</a><a href="/terms">Terms & Conditions</a><a href="/refund-cancellation">Refunds & Cancellation</a>';f.appendChild(d);}});</script>
+</body></html>
