@@ -1,0 +1,20 @@
+material,supplier,quantity,price,transaction_date
+Steel Coil,Tata Steel,1200,520,2026-08-01
+Steel Coil,JSW Steel,900,500,2026-08-04
+Steel Coil,Tata Steel,1500,525,2026-08-15
+Steel Coil,JSW Steel,1000,505,2026-08-18
+Copper Wire,Hindalco,800,740,2026-08-02
+Copper Wire,Vedanta,600,700,2026-08-07
+Copper Wire,Hindalco,900,755,2026-08-21
+Packaging Box,PackPro,5000,42,2026-08-03
+Packaging Box,PackPro,3500,43,2026-08-17
+Packaging Box,BoxWorks,2500,39,2026-08-20
+Safety Gloves,SafeHands,3000,88,2026-08-05
+Safety Gloves,SafeHands,2800,89,2026-08-22
+Safety Gloves,ShieldCo,1500,82,2026-08-25
+Office Chair,ErgoWorks,120,8500,2026-08-06
+Office Chair,ComfortSeat,80,7900,2026-08-11
+Office Chair,ErgoWorks,100,8600,2026-08-28
+Laptop Stand,DeskMate,300,1450,2026-08-09
+Laptop Stand,WorkFit,250,1250,2026-08-12
+Laptop Stand,DeskMate,200,1500,2026-08-26
