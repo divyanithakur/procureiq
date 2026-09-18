@@ -99,7 +99,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json({ limit: "20mb" }));
 
 /* Lightweight in-process API abuse protection. This intentionally has no
    dependency and is a safety layer, not a replacement for an edge/WAF rate
@@ -507,9 +507,16 @@ async function getAIQuota(userId) {
   const usage = await getUsageRecord(userId);
   const plan = String(usage.plan || 'free').toLowerCase();
   const limit = PLAN_TOKEN_LIMITS[plan] || PLAN_TOKEN_LIMITS.free;
-  const used = Number(usage.tokens_used) || 0;
+  const rawUsed = Math.max(0, Number(usage.tokens_used) || 0);
+  // A previous reservation/finalization path could temporarily push usage over
+  // the daily plan limit. Normalize the stored counter so the API, UI and
+  // enforcement all use one bounded source of truth.
+  const used = Math.min(rawUsed, limit);
+  if (rawUsed !== used) {
+    await pool.query(`UPDATE ai_usage SET tokens_used=$2, updated_at=CURRENT_TIMESTAMP WHERE clerk_user_id=$1 AND usage_date=CURRENT_DATE`, [userId, used]);
+  }
   const capacity = plan === 'free' ? await getFreeUserCapacity(userId) : { activeUsers: 0, cap: FREE_USER_CAP, reached: false };
-  return { usage, plan, limit, used, remaining: Math.max(0, limit-used), ...capacity };
+  return { usage: { ...usage, tokens_used: used }, plan, limit, used, remaining: Math.max(0, limit-used), ...capacity };
 }
 
 async function recordAIUsage(userId, tokens, type) {
@@ -523,6 +530,65 @@ async function recordAIUsage(userId, tokens, type) {
         updated_at = CURRENT_TIMESTAMP
     WHERE clerk_user_id=$1 AND usage_date=CURRENT_DATE
   `, [userId, safeTokens, type]);
+}
+
+/*
+ * Reserve an AI budget before the provider request starts. The conditional
+ * UPDATE makes the quota safe against simultaneous requests.
+ */
+async function reserveAIQuota(userId, estimatedTokens) {
+  const requested = Math.max(1, Math.ceil(Number(estimatedTokens) || 0));
+  const quota = await getAIQuota(userId);
+
+  if (quota.reached) return { ok: false, reason: "workspace_cap", quota };
+
+  const result = await pool.query(`
+    UPDATE ai_usage
+    SET tokens_used = tokens_used + $2,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE clerk_user_id=$1
+      AND usage_date=CURRENT_DATE
+      AND tokens_used + $2 <= $3
+    RETURNING tokens_used
+  `, [userId, requested, quota.limit]);
+
+  if (!result.rowCount) {
+    return { ok: false, reason: "token_limit", quota: await getAIQuota(userId) };
+  }
+
+  return {
+    ok: true,
+    reserved: requested,
+    tokens_used: Number(result.rows[0].tokens_used) || requested
+  };
+}
+
+async function finalizeAIUsage(userId, reservedTokens, actualTokens, type) {
+  const reserved = Math.max(0, Number(reservedTokens) || 0);
+  const actual = Math.max(0, Number(actualTokens) || 0);
+  const delta = actual - reserved;
+  const quota = await getAIQuota(userId);
+
+  await pool.query(`
+    UPDATE ai_usage
+    SET tokens_used = LEAST($3, GREATEST(0, tokens_used + $2)),
+        insight_requests = insight_requests + CASE WHEN $4='insight' THEN 1 ELSE 0 END,
+        chat_requests = chat_requests + CASE WHEN $4='chat' THEN 1 ELSE 0 END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE clerk_user_id=$1 AND usage_date=CURRENT_DATE
+  `, [userId, delta, quota.limit, type]);
+}
+
+// Provider failures and aborted requests return their reservation without
+// being counted as a completed AI request.
+async function releaseAIQuota(userId, reservedTokens) {
+  const reserved = Math.max(0, Number(reservedTokens) || 0);
+  if (!reserved) return;
+  await pool.query(`
+    UPDATE ai_usage
+    SET tokens_used = GREATEST(0, tokens_used - $2), updated_at=CURRENT_TIMESTAMP
+    WHERE clerk_user_id=$1 AND usage_date=CURRENT_DATE
+  `, [userId, reserved]);
 }
 
 app.get("/api/usage", async (req, res) => {
@@ -1131,9 +1197,15 @@ app.post("/api/insight", async (req, res) => {
 
     const prompt = `You are ProcureIQ's procurement explanation layer. Use ONLY the verified facts below. Never change or invent a number, supplier, material, quantity, benchmark, variance, or saving. A price difference is a review signal, not proof of wrongdoing. Do not make external market claims.\n\nMaterial: ${String(row.material)}\nSupplier: ${String(row.supplier)}\nPaid price: INR ${numericPrice}\nLowest observed price for this material in this workspace: INR ${numericMinPrice}\nQuantity: ${numericQuantity}\nCalculated variance: ${variance.toFixed(2)}%\nCalculated potential saving: INR ${saving.toFixed(2)}\nComparable transaction count: ${prices.length}\n\nReturn exactly three short sections, each starting with the heading below:\n1. Why investigate\n2. What to validate\n3. Recommended action\n\nUse the verified figures above when useful. Keep under 100 words.`;
 
-    const quota = await getAIQuota(userId);
-    if (quota.reached) return res.status(402).json({ error: "The 50 free workspaces are currently full. Upgrade your plan to continue using AI assistance.", upgrade_required: true, free_user_cap_reached: true });
-    if (quota.used >= quota.limit) return res.status(429).json({ error: "Your AI usage limit for today has been reached.", usage_limit_reached: true });
+    // Reserve a conservative budget before the provider request. AI only
+    // explains verified evidence; financial calculations remain server-side.
+    const reservation = await reserveAIQuota(userId, Math.max(384, Math.ceil((prompt.length + 900) / 3)));
+    if (!reservation.ok) {
+      if (reservation.reason === "workspace_cap") {
+        return res.status(402).json({ error: "The free workspace capacity is currently full. Upgrade your plan to continue using AI assistance.", upgrade_required: true, free_user_cap_reached: true });
+      }
+      return res.status(429).json({ error: "Your AI token limit for today has been reached. Upgrade your plan to continue.", usage_limit_reached: true, upgrade_required: true });
+    }
 
     let response;
     try {
@@ -1141,8 +1213,8 @@ app.post("/api/insight", async (req, res) => {
     } catch (geminiError) {
       console.warn("Gemini unavailable; using deterministic procurement insight.");
       const fallback = buildFallbackInsight({ material: row.material, supplier: row.supplier, numericPrice, numericMinPrice, numericQuantity, saving });
-      await recordAIUsage(userId, 0, "insight").catch(() => {});
-      return res.json({ insight: fallback, fallback: true, usage: { tokens_used: 0 }, notice: "Gemini was unavailable, so ProcureIQ returned a deterministic insight from verified workspace data." });
+      await releaseAIQuota(userId, reservation.reserved).catch(() => {});
+      return res.json({ insight: fallback, fallback: true, usage: { tokens_used: 0 }, notice: "AI was unavailable, so ProcureIQ returned a deterministic explanation from verified workspace evidence." });
     }
 
     const usageMeta = response.usageMetadata || response.usage_metadata || {};
@@ -1150,7 +1222,7 @@ app.post("/api/insight", async (req, res) => {
     const outputTokens = Number(usageMeta.candidatesTokenCount || usageMeta.outputTokenCount || 0);
     const fallbackTokens = Math.ceil((prompt.length + String(response.text || "").length) / 4);
     const consumedTokens = inputTokens + outputTokens || fallbackTokens;
-    await recordAIUsage(userId, consumedTokens, "insight").catch(() => {});
+    await finalizeAIUsage(userId, reservation.reserved, consumedTokens, "insight").catch(() => {});
 
     return res.json({
       insight: response.text,
@@ -1208,26 +1280,36 @@ app.post("/api/chat", async (req, res) => {
     else if (/how.*procureiq|what.*procureiq|what can/.test(q)) answer = "ProcureIQ turns purchasing data into an investigation queue: it normalizes transactions, detects price differences, estimates potential savings and provides AI-assisted explanations.";
     else answer = "I can help with procurement concepts, price variance, savings opportunities, suppliers, uploads, reports and using the ProcureIQ dashboard. For a specific purchase, verify the quote, contract, specification, quantity, freight and delivery terms before taking action.";
 
-    const estimatedTokens = Math.max(1, Math.ceil((question.length + answer.length) / 4));
-    try { await recordAIUsage(userId, estimatedTokens, "chat"); } catch (usageError) { console.warn("Chat usage recording failed:", usageError.message); }
+    const prompt = `You are ProcureIQ Assistant. Improve this concise procurement answer without inventing facts. Keep under 100 words. Verified workspace facts: ${JSON.stringify({ transactions: tx, opportunities: opp, potential_savings_inr: Number(savings.toFixed(2)) })}. Question: ${question}. Base answer: ${answer}`;
+    const estimatedTokens = Math.max(384, Math.ceil((prompt.length + 900) / 3));
+    const reservation = await reserveAIQuota(userId, estimatedTokens);
+    if (!reservation.ok) {
+      if (reservation.reason === "workspace_cap") {
+        return res.status(402).json({ error: "The free workspace capacity is currently full. Upgrade your plan to continue using AI assistance.", upgrade_required: true, free_user_cap_reached: true });
+      }
+      return res.status(429).json({ error: "Your AI token limit for today has been reached. Upgrade your plan to continue.", usage_limit_reached: true, upgrade_required: true });
+    }
 
-    // Gemini is optional for chat. It receives only the server-derived facts needed
-    // for the answer; browser-supplied counts are never treated as authoritative.
+    // Gemini receives only server-derived facts. Browser-supplied counts are
+    // never authoritative, and the reservation is reconciled after completion.
     if (ai) {
       try {
-        const prompt = `You are ProcureIQ Assistant. Improve this concise procurement answer without inventing facts. Keep under 100 words. Verified workspace facts: ${JSON.stringify({ transactions: tx, opportunities: opp, potential_savings_inr: Number(savings.toFixed(2)) })}. Question: ${question}. Base answer: ${answer}`;
         const response = await generateGemini(prompt);
         if (response?.text) {
           const meta = response.usageMetadata || response.usage_metadata || {};
           const actual = Number(meta.promptTokenCount || 0) + Number(meta.candidatesTokenCount || 0);
-          if (actual > 0) { try { await recordAIUsage(userId, actual - estimatedTokens, "chat"); } catch (_) {} }
-          return res.json({ answer: response.text, fallback: false, usage: { tokens_used: actual || estimatedTokens } });
+          const consumed = actual || estimatedTokens;
+          await finalizeAIUsage(userId, reservation.reserved, consumed, "chat").catch(() => {});
+          return res.json({ answer: response.text, fallback: false, usage: { tokens_used: consumed } });
         }
       } catch (geminiError) {
         console.warn("Gemini unavailable; returning deterministic assistant answer:", geminiError.message);
       }
     }
-    return res.json({ answer, fallback: true, usage: { tokens_used: estimatedTokens } });
+
+    // A deterministic fallback does not consume provider tokens.
+    await releaseAIQuota(userId, reservation.reserved).catch(() => {});
+    return res.json({ answer, fallback: true, usage: { tokens_used: 0 } });
   } catch (error) {
     console.error("Chat assistant failed:", error.message);
     res.status(500).json({ error: "Unable to process your question right now." });

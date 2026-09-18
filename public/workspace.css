@@ -2073,7 +2073,10 @@ html, body, .app-shell {
 }
 
 @media (max-width: 760px) {
-  html, body, .app-shell { overflow-x: hidden !important; }
+  /* V83: was overflow-x:hidden, which made these elements scroll
+     containers and broke the sticky header. clip suppresses the
+     same horizontal overflow without creating one. */
+  html, body, .app-shell { overflow-x: clip !important; }
 }
 
 
@@ -2369,4 +2372,1312 @@ html, body, .app-shell {
   pointer-events:auto !important;
   touch-action:manipulation !important;
   cursor:pointer !important;
+}
+
+
+/* V70 workspace header token status. */
+.workspace-token-status { flex:0 0 auto; }
+@media(max-width:700px){ .workspace-token-status { margin-left:auto; } }
+
+
+/* =========================================================
+   V71 — HEADER TOKEN NAV + ACCOUNT PLAN POLISH
+   ========================================================= */
+.app-shell .app-header{
+  padding:0 20px!important;
+  gap:16px!important;
+}
+.app-shell .app-header .app-brand{
+  margin-left:-6px!important;
+}
+.app-shell .app-header .app-logo{
+  width:150px!important;
+  max-width:150px!important;
+  max-height:42px!important;
+}
+.workspace-context{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.workspace-header-nav{
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  margin-left:auto!important;
+  flex:0 0 auto!important;
+}
+.workspace-home-btn{
+  margin-left:0!important;
+  white-space:nowrap!important;
+  min-height:36px!important;
+  padding:8px 11px!important;
+}
+.workspace-token-status{
+  width:214px!important;
+  min-width:214px!important;
+  padding:8px 11px!important;
+  border:1px solid #dce4ed!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  box-shadow:0 3px 14px rgba(18,43,69,.055)!important;
+}
+.workspace-token-status .token-status-head{
+  display:grid!important;
+  grid-template-columns:auto 1fr auto!important;
+  align-items:center!important;
+  gap:7px!important;
+}
+.workspace-token-status .header-token-label{
+  font-size:8px!important;
+  font-weight:900!important;
+  letter-spacing:.12em!important;
+  color:#7a899a!important;
+}
+.workspace-token-status .token-status-head strong{
+  color:#173b67!important;
+  font-size:13px!important;
+  line-height:1.1!important;
+  text-align:right!important;
+}
+.workspace-token-status .token-status-head small{
+  color:#8a98a8!important;
+  font-size:8px!important;
+}
+.workspace-token-status .token-status-track{
+  height:5px!important;
+  margin:6px 0 5px!important;
+  background:#edf1f5!important;
+}
+.workspace-token-status .token-status-track span{
+  background:#2d6dcc!important;
+}
+.workspace-token-status .token-status-meta{
+  display:flex!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  color:#7a899b!important;
+  font-size:8px!important;
+}
+.workspace-token-status .token-status-meta b{
+  color:#3d5570!important;
+  font-weight:800!important;
+}
+.sidebar-account-block{
+  position:relative!important;
+  margin:0 2px 20px!important;
+  padding:0 0 15px!important;
+  border-bottom:1px solid #e8edf2!important;
+}
+.dashboard-account-btn{
+  width:100%!important;
+  min-height:46px!important;
+  padding:7px 8px!important;
+  border:1px solid #e2e8ef!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.dashboard-account-btn:hover{
+  background:#f8fafc!important;
+  border-color:#d5e0ea!important;
+}
+.dashboard-account-btn .dashboard-account-avatar{
+  width:32px!important;
+  height:32px!important;
+  flex-basis:32px!important;
+}
+.dashboard-account-btn .dashboard-account-copy strong{
+  font-size:12px!important;
+  color:#203b5c!important;
+}
+.sidebar-account-block>.account-plan-row{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  padding:7px 9px 0 49px!important;
+  margin:0!important;
+}
+.sidebar-account-block>.account-plan-row small{
+  color:#7f8d9d!important;
+  font-size:9px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.sidebar-account-block .sidebar-upgrade{
+  border:1px solid #cbdced!important;
+  background:#f3f7fc!important;
+  color:#245dcc!important;
+  border-radius:5px!important;
+  padding:4px 7px!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  cursor:pointer!important;
+}
+.sidebar-account-block .sidebar-upgrade:hover{
+  background:#eaf2fb!important;
+  border-color:#b9cee6!important;
+}
+@media(max-width:900px){
+  .workspace-token-status{width:200px!important;min-width:200px!important}
+}
+@media(max-width:760px){
+  .app-shell .app-header{
+    padding:0 15px!important;
+    gap:10px!important;
+  }
+  .app-shell .app-header .app-brand{margin-left:0!important}
+  .app-shell .app-header .app-logo{
+    width:104px!important;
+    max-width:104px!important;
+    max-height:36px!important;
+  }
+  .workspace-context{display:none!important}
+  .workspace-header-nav{gap:6px!important}
+  .workspace-home-btn{
+    font-size:9px!important;
+    padding:6px 7px!important;
+  }
+  .workspace-token-status{
+    width:148px!important;
+    min-width:148px!important;
+    padding:7px 8px!important;
+  }
+  .workspace-token-status .header-token-label{font-size:7px!important}
+  .workspace-token-status .token-status-head strong{font-size:11px!important}
+  .workspace-token-status .token-status-head small,
+  .workspace-token-status .token-status-meta{font-size:7px!important}
+}
+
+/* =========================================================
+   V72 — EXECUTIVE PDF + QUIET HEADER REFINEMENT
+   ========================================================= */
+.app-shell .app-header {
+  padding-left: 10px !important;
+  padding-right: 20px !important;
+}
+
+.app-shell .app-header .app-brand {
+  margin-left: -4px !important;
+  margin-right: 0 !important;
+}
+
+.app-shell .app-header .app-logo {
+  width: 146px !important;
+  max-width: 146px !important;
+  max-height: 42px !important;
+}
+
+.workspace-header-nav {
+  gap: 8px !important;
+}
+
+.workspace-home-btn {
+  min-height: 34px !important;
+  padding: 7px 10px !important;
+  font-size: 10px !important;
+  border-radius: 7px !important;
+}
+
+.workspace-token-status {
+  width: 176px !important;
+  min-width: 176px !important;
+  padding: 6px 9px !important;
+  border: 1px solid #e0e7ee !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 5px rgba(18,43,69,.035) !important;
+}
+
+.workspace-token-status .token-status-head {
+  grid-template-columns: auto 1fr auto !important;
+  gap: 5px !important;
+}
+
+.workspace-token-status .header-token-label {
+  font-size: 7px !important;
+  letter-spacing: .1em !important;
+}
+
+.workspace-token-status .token-status-head strong {
+  font-size: 11px !important;
+}
+
+.workspace-token-status .token-status-head small {
+  font-size: 7px !important;
+}
+
+.workspace-token-status .token-status-track {
+  height: 4px !important;
+  margin: 4px 0 !important;
+}
+
+.workspace-token-status .token-status-meta {
+  font-size: 7px !important;
+  gap: 7px !important;
+}
+
+.sidebar-account-block {
+  margin-bottom: 20px !important;
+  padding-bottom: 13px !important;
+}
+
+.dashboard-account-btn {
+  min-height: 43px !important;
+  padding: 6px 8px !important;
+}
+
+.dashboard-account-btn .dashboard-account-avatar {
+  width: 30px !important;
+  height: 30px !important;
+  flex-basis: 30px !important;
+}
+
+.dashboard-account-btn .dashboard-account-copy strong {
+  font-size: 12px !important;
+}
+
+.sidebar-account-block > .account-plan-row {
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 6px 8px 0 46px !important;
+}
+
+.sidebar-account-block > .account-plan-row small {
+  font-size: 9px !important;
+}
+
+.sidebar-account-block .sidebar-upgrade {
+  padding: 4px 8px !important;
+  font-size: 8px !important;
+  border-radius: 5px !important;
+}
+
+@media (max-width: 900px) {
+  .workspace-token-status {
+    width: 166px !important;
+    min-width: 166px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell .app-header .app-brand {
+    transform: translateX(0) !important;
+  }
+  .app-shell .app-header {
+    padding-left: 10px !important;
+    padding-right: 12px !important;
+  }
+
+  .app-shell .app-header .app-brand {
+    margin-left: -2px !important;
+  }
+
+  .app-shell .app-header .app-logo {
+    width: 112px !important;
+    max-width: 112px !important;
+    max-height: 34px !important;
+  }
+
+  .workspace-token-status {
+    width: 142px !important;
+    min-width: 142px !important;
+    padding: 6px 7px !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL POLISH — COMPACT HEADER TOKEN UTILITY + ACCOUNT
+   ========================================================= */
+.app-shell .app-header {
+  padding-left: 10px !important;
+  padding-right: 20px !important;
+  gap: 14px !important;
+}
+.app-shell .app-header .app-brand {
+  margin-left: -7px !important;
+  margin-right: 0 !important;
+}
+.app-shell .app-header .app-logo {
+  width: 144px !important;
+  max-width: 144px !important;
+  max-height: 40px !important;
+}
+.workspace-context {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 40px !important;
+  line-height: 1 !important;
+}
+.workspace-header-nav {
+  gap: 8px !important;
+  align-items: center !important;
+}
+.workspace-home-btn {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  font-size: 10px !important;
+}
+.workspace-token-status {
+  width: auto !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  box-sizing: border-box !important;
+  padding: 5px 8px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 5px rgba(18,43,69,.035) !important;
+  display: grid !important;
+  grid-template-columns: auto auto auto auto !important;
+  grid-template-rows: 18px 10px !important;
+  column-gap: 6px !important;
+  row-gap: 2px !important;
+  align-items: center !important;
+}
+.workspace-token-status .token-status-head {
+  display: contents !important;
+}
+.workspace-token-status .header-token-label {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  font-size: 7px !important;
+  letter-spacing: .10em !important;
+  color: #7a899a !important;
+}
+.workspace-token-status .token-status-head strong {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  color: #173b67 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+.workspace-token-status .token-status-head small {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  font-size: 7px !important;
+  color: #8a98a8 !important;
+  white-space: nowrap !important;
+}
+.workspace-token-status .header-token-upgrade {
+  grid-column: 4 !important;
+  grid-row: 1 !important;
+  height: 20px !important;
+  padding: 0 7px !important;
+  border: 1px solid #cbdced !important;
+  border-radius: 5px !important;
+  background: #f3f7fc !important;
+  color: #245dcc !important;
+  font-size: 7px !important;
+  font-weight: 800 !important;
+  line-height: 18px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+.workspace-token-status .header-token-upgrade:hover {
+  background: #eaf2fb !important;
+  border-color: #b9cee6 !important;
+}
+.workspace-token-status .token-status-track {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  height: 3px !important;
+  margin: 0 !important;
+  background: #edf1f5 !important;
+  border-radius: 99px !important;
+}
+.workspace-token-status .token-status-meta {
+  display: none !important;
+}
+.sidebar-account-block {
+  margin-bottom: 13px !important;
+  padding-bottom: 11px !important;
+}
+.sidebar-account-block > .account-plan-row {
+  padding-top: 4px !important;
+  padding-left: 46px !important;
+  gap: 7px !important;
+}
+.sidebar-account-block > .account-plan-row small {
+  font-size: 9px !important;
+}
+.sidebar-account-block .sidebar-upgrade {
+  padding: 3px 7px !important;
+  font-size: 8px !important;
+}
+.sidebar-brand-caption {
+  margin-bottom: 16px !important;
+}
+@media (max-width: 900px) {
+  .workspace-token-status { width: auto !important; min-width: 0 !important; }
+}
+@media (max-width: 760px) {
+  .app-shell .app-header { padding-left: 10px !important; padding-right: 10px !important; gap: 7px !important; }
+  .app-shell .app-header .app-brand { margin-left: -2px !important; }
+  .app-shell .app-header .app-logo { width: 108px !important; max-width: 108px !important; max-height: 34px !important; }
+  .workspace-context { display: none !important; }
+  .workspace-home-btn { height: 36px !important; min-height: 36px !important; padding: 0 8px !important; }
+  .workspace-token-status { height: 38px !important; padding: 4px 6px !important; grid-template-rows: 16px 9px !important; column-gap: 4px !important; }
+  .workspace-token-status .header-token-label { font-size: 6px !important; }
+  .workspace-token-status .token-status-head strong { font-size: 9px !important; }
+  .workspace-token-status .token-status-head small { font-size: 6px !important; }
+  .workspace-token-status .header-token-upgrade { height: 18px !important; line-height: 16px !important; padding: 0 5px !important; font-size: 6px !important; }
+}
+
+/* V74 — Header-only refinement: stable, quiet SaaS navigation utility. */
+.app-shell .app-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 0 32px !important;
+  gap: 18px !important;
+  background: rgba(255,255,255,.98) !important;
+  border-bottom: 1px solid #e3eaf1 !important;
+  box-shadow: 0 2px 10px rgba(18,43,69,.035) !important;
+}
+.app-shell .app-header .app-brand {
+  height: 64px !important;
+  margin-left: 0 !important;
+  margin-right: 2px !important;
+}
+.app-shell .app-header .app-logo {
+  width: 144px !important;
+  max-width: 144px !important;
+  max-height: 40px !important;
+}
+.workspace-context {
+  min-height: 40px !important;
+  font-size: 12px !important;
+}
+.workspace-header-nav {
+  margin-left: auto !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+/* Visual and keyboard order keep tokens immediately before the final Home action. */
+.workspace-token-status { order: 1 !important; }
+.workspace-home-btn { order: 2 !important; }
+.workspace-token-status {
+  width: 122px !important;
+  min-width: 122px !important;
+  height: 42px !important;
+  padding: 6px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  border: 1px solid #e1e8ef !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.workspace-token-status .token-status-head {
+  display: block !important;
+  min-height: 24px !important;
+}
+.workspace-token-status .header-token-label {
+  display: block !important;
+  font-size: 7px !important;
+  line-height: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: .1em !important;
+  color: #7a899a !important;
+}
+.workspace-token-status .token-status-head strong {
+  display: block !important;
+  margin-top: 1px !important;
+  font-size: 11px !important;
+  line-height: 13px !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  color: #173b67 !important;
+  white-space: nowrap !important;
+}
+.workspace-token-status .token-status-head small,
+.workspace-token-status .token-status-meta,
+.workspace-token-status .header-token-upgrade { display: none !important; }
+.workspace-token-status .token-status-track {
+  width: 100% !important;
+  height: 3px !important;
+  margin: 3px 0 0 !important;
+  border-radius: 99px !important;
+  background: #edf1f5 !important;
+}
+.workspace-token-status .token-status-track span {
+  display: block !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  background: #2d6dcc !important;
+}
+.workspace-home-btn {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+}
+@media (max-width: 760px) {
+  .app-shell .app-header { height: 60px !important; min-height: 60px !important; padding: 0 16px !important; gap: 10px !important; }
+  .app-shell .app-header .app-brand { height: 60px !important; }
+  .app-shell .app-header .app-logo { width: 116px !important; max-width: 116px !important; max-height: 34px !important; }
+  .workspace-context { display: none !important; }
+  .workspace-header-nav { gap: 7px !important; }
+  .workspace-token-status { width: 104px !important; min-width: 104px !important; height: 38px !important; padding: 5px 7px !important; }
+  .workspace-token-status .header-token-label { font-size: 6px !important; }
+  .workspace-token-status .token-status-head strong { font-size: 9px !important; }
+  .workspace-home-btn { height: 36px !important; min-height: 36px !important; padding: 0 9px !important; font-size: 10px !important; }
+}
+
+/* V77 — Viewport-fixed header and minimal token utility. */
+.app-shell {
+  padding-top: 64px !important;
+}
+.app-shell .app-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important;
+  box-sizing: border-box !important;
+  padding-left: 32px !important;
+  padding-right: 24px !important;
+}
+.app-shell .app-header .app-brand {
+  margin-left: 0 !important;
+}
+.workspace-token-status {
+  width: 126px !important;
+  min-width: 126px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 24px !important;
+  grid-template-rows: 1fr !important;
+  align-items: center !important;
+  column-gap: 8px !important;
+  padding: 5px 7px 5px 9px !important;
+  border-color: #e5ebf1 !important;
+  background: transparent !important;
+}
+.workspace-token-status .token-status-head {
+  display: block !important;
+  min-height: 0 !important;
+}
+.workspace-token-status .header-token-label {
+  font-size: 8px !important;
+  line-height: 10px !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+.workspace-token-status .token-status-head strong {
+  font-size: 11px !important;
+  line-height: 13px !important;
+  margin-top: 1px !important;
+}
+.workspace-token-status .token-status-track {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  background: conic-gradient(#2d6dcc calc(var(--token-used, 0) * 1%), #e8edf2 0) !important;
+}
+.workspace-token-status .token-status-track::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #fff;
+}
+.workspace-token-status .token-status-track span { display: none !important; }
+@media (max-width: 760px) {
+  .app-shell { padding-top: 60px !important; }
+  .app-shell .app-header { height: 60px !important; min-height: 60px !important; padding-left: 16px !important; padding-right: 12px !important; }
+  .workspace-token-status { width: 108px !important; min-width: 108px !important; height: 38px !important; grid-template-columns:minmax(0,1fr) 20px !important; column-gap:5px !important; }
+  .workspace-token-status .token-status-track { width:18px !important; height:18px !important; }
+  .workspace-token-status .token-status-track::after { inset:3px; }
+}
+
+
+/* V78 FINAL — authoritative viewport-fixed workspace header.
+   This block intentionally comes last so older V72/V74/V77 rules cannot win. */
+html {
+  scroll-padding-top: 64px !important;
+}
+
+body {
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure no ancestor establishes a containing block that can capture position:fixed. */
+.app-shell {
+  position: static !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  contain: none !important;
+  isolation: auto !important;
+  padding-top: 64px !important;
+}
+
+.app-shell .app-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 24px 0 32px !important;
+  gap: 18px !important;
+  background: rgba(255,255,255,.98) !important;
+  border-bottom: 1px solid #e3eaf1 !important;
+  box-shadow: 0 2px 10px rgba(18,43,69,.035) !important;
+}
+
+/* Stable logo alignment — no accidental auto margin or oversized inset. */
+.app-shell .app-header .app-brand {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  height: 64px !important;
+  margin: 0 2px 0 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.app-shell .app-header .app-logo {
+  display: block !important;
+  width: 144px !important;
+  max-width: 144px !important;
+  height: auto !important;
+  max-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Keep the context centered vertically and let the right utility group own the free space. */
+.app-shell .app-header .workspace-context {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.app-shell .app-header .workspace-header-nav {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+  order: 3 !important;
+}
+
+/* Semantic DOM order is Token utility, then Home. */
+.app-shell .app-header .workspace-token-status {
+  order: 1 !important;
+  position: relative !important;
+  width: 126px !important;
+  min-width: 126px !important;
+  height: 40px !important;
+  margin: 0 !important;
+  padding: 5px 7px 5px 9px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 22px !important;
+  grid-template-rows: 1fr !important;
+  align-items: center !important;
+  column-gap: 7px !important;
+  border: 1px solid #e5ebf1 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-head {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: block !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
+.app-shell .app-header .workspace-token-status .header-token-label {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #718096 !important;
+  font-size: 8px !important;
+  line-height: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-head strong {
+  display: block !important;
+  margin: 1px 0 0 !important;
+  color: #173b67 !important;
+  font-size: 11px !important;
+  line-height: 13px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-head small,
+.app-shell .app-header .workspace-token-status .token-status-meta,
+.app-shell .app-header .workspace-token-status .header-token-upgrade {
+  display: none !important;
+}
+
+/* The ring is a real used-vs-remaining indicator:
+   colored arc = used, neutral arc = remaining. */
+.app-shell .app-header .workspace-token-status .token-status-track {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  background: conic-gradient(
+    #2d6dcc calc(var(--token-used, 0) * 1%),
+    #e8edf2 0
+  ) !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-track::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 3px !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-track span {
+  display: none !important;
+}
+
+.app-shell .app-header .workspace-home-btn {
+  order: 2 !important;
+  flex: 0 0 auto !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+
+/* The fixed header spans the viewport; the workspace itself remains below it. */
+.workspace-main {
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: calc(100vh - 64px) !important;
+}
+
+/* Small screens */
+@media (max-width: 760px) {
+  .app-shell {
+    padding-top: 60px !important;
+  }
+  .app-shell .app-header {
+    height: 60px !important;
+    min-height: 60px !important;
+    padding: 0 12px 0 16px !important;
+    gap: 10px !important;
+  }
+  .app-shell .app-header .app-brand {
+    height: 60px !important;
+  }
+  .app-shell .app-header .app-logo {
+    width: 116px !important;
+    max-width: 116px !important;
+    max-height: 34px !important;
+  }
+  .app-shell .app-header .workspace-context {
+    display: none !important;
+  }
+  .app-shell .app-header .workspace-header-nav {
+    gap: 7px !important;
+  }
+  .app-shell .app-header .workspace-token-status {
+    width: 108px !important;
+    min-width: 108px !important;
+    height: 38px !important;
+    grid-template-columns: minmax(0, 1fr) 18px !important;
+    column-gap: 5px !important;
+  }
+  .app-shell .app-header .workspace-token-status .token-status-track {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .app-shell .app-header .workspace-token-status .header-token-label {
+    font-size: 7px !important;
+  }
+  .app-shell .app-header .workspace-token-status .token-status-head strong {
+    font-size: 9px !important;
+  }
+  .app-shell .app-header .workspace-home-btn {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 9px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* V79 FINAL HOTFIX — workspace drawer must begin below the fixed header;
+   header branding aligns with the sidebar account text. */
+.app-shell .app-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  z-index: 2147483647 !important;
+  overflow: visible !important;
+  padding-left: 76px !important;
+  padding-right: 24px !important;
+}
+
+/* The sidebar account name begins around the same horizontal anchor.
+   Keep the full logo itself intact; only its navbar anchor is aligned. */
+.app-shell .app-header .app-brand {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+  height: 64px !important;
+}
+
+.app-shell .app-header .app-logo {
+  width: 144px !important;
+  max-width: 144px !important;
+  max-height: 40px !important;
+  height: auto !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+}
+
+/* V80 LOGO ALIGNMENT: visually align the full ProcureIQ mark with the
+   sidebar account-name anchor without moving the workspace context. */
+.app-shell .app-header .app-brand {
+  transform: translateX(-22px) !important;
+}
+
+/* The investigation drawer must never sit underneath the fixed navbar.
+   Its backdrop/panel start exactly below the 64px workspace header. */
+.app-shell .opportunity-drawer {
+  position: fixed !important;
+  top: 64px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: calc(100vh - 64px) !important;
+  z-index: 10000 !important;
+}
+
+.app-shell .opportunity-drawer-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+}
+
+.app-shell .opportunity-drawer-panel {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+.app-shell .opportunity-drawer-close {
+  position: absolute !important;
+  top: 16px !important;
+  right: 18px !important;
+  z-index: 20 !important;
+}
+
+/* Token ring: colored arc is USED, neutral arc is REMAINING. */
+.app-shell .app-header .workspace-token-status .token-status-track {
+  background: conic-gradient(
+    #2d6dcc calc(var(--token-used, 0) * 1%),
+    #e8edf2 0
+  ) !important;
+}
+
+@media (max-width: 760px) {
+  .app-shell .app-header {
+    height: 60px !important;
+    min-height: 60px !important;
+    padding-left: 16px !important;
+    padding-right: 12px !important;
+  }
+  .app-shell .app-header .app-brand {
+    height: 60px !important;
+  }
+  .app-shell .opportunity-drawer {
+    top: 60px !important;
+    height: calc(100vh - 60px) !important;
+  }
+}
+
+/* V81 FINAL — align workspace header with sidebar account anchor. */
+.app-shell .app-header {
+  padding-left: 16px !important;
+  padding-right: 24px !important;
+}
+.app-shell .app-header .app-brand {
+  transform: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+.app-shell .sidebar-account-block .account-plan-row {
+  margin: 0 0 0 42px !important;
+  padding: 0 !important;
+  min-height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row small {
+  font-size: 9px !important;
+  line-height: 14px !important;
+  white-space: nowrap !important;
+}
+.app-shell .sidebar-account-block .sidebar-upgrade {
+  padding: 3px 7px !important;
+  font-size: 8px !important;
+  line-height: 12px !important;
+}
+@media (max-width:760px) {
+  .app-shell .app-header {
+    padding-left: 14px !important;
+    padding-right: 12px !important;
+  }
+}
+
+
+/* V82 FINAL ACCOUNT ALIGNMENT
+   Keep identity and plan in one compact vertical stack. The Upgrade control
+   stays beside the plan, directly below the account name. */
+.app-shell .sidebar-account-block .dashboard-account-btn {
+  min-height: 56px !important;
+  padding: 7px 8px !important;
+  align-items: center !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-copy {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 2px !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-copy strong {
+  display: block !important;
+  line-height: 15px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 132px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 13px !important;
+  line-height: 13px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row small {
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 13px !important;
+  white-space: nowrap !important;
+}
+.app-shell .sidebar-account-block .sidebar-upgrade {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 2px 6px !important;
+  min-height: 16px !important;
+  line-height: 11px !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   V83 LAYOUT CORRECTIONS
+   Four verified bugs: sticky header, header/sidebar gutter
+   alignment, account block spacing, main-column right clip.
+   This is the last layer in the file and is authoritative.
+   ========================================================= */
+
+/* ---- 83.1 Sticky header ----------------------------------
+   .app-header already declared position:sticky, but the V42
+   rule set overflow-x:hidden on html, body and .app-shell.
+   overflow-x:hidden forces the computed overflow-y of those
+   elements to "auto", which turns every one of them into a
+   scroll container, and a sticky child sticks to its nearest
+   scroll container rather than the viewport. That single
+   property is why the header scrolled away.
+   overflow-x:clip suppresses horizontal overflow WITHOUT
+   creating a scroll container, so sticky resolves against the
+   viewport again.                                           */
+html,
+body,
+.app-shell {
+  max-width: 100%;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
+/* Anchor jumps must not land behind the pinned header. */
+html {
+  scroll-padding-top: var(--ws-header-h, 70px);
+}
+
+:root {
+  --ws-header-h: 70px;
+  --ws-gutter: 24px;
+}
+
+.app-shell .app-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 200 !important;
+  height: var(--ws-header-h) !important;
+  /* Fully opaque. A translucent bar let page text read through
+     it while scrolling; backdrop-filter also creates a
+     containing block that can break descendant positioning. */
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---- 83.2 Header and sidebar share one left gutter -------
+   The logo sat on a different vertical line from the sidebar
+   nav below it. Both now start at --ws-gutter.              */
+.app-shell .app-header {
+  padding-left: var(--ws-gutter) !important;
+  padding-right: var(--ws-gutter) !important;
+  align-items: center !important;
+}
+.app-shell .app-header .app-brand {
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  align-self: center !important;
+}
+.app-shell .app-header .app-logo {
+  margin: 0 !important;
+  display: block !important;
+}
+/* Sidebar padding + button padding must resolve to the same
+   left edge as the logo: 14px + 10px = 24px = --ws-gutter. */
+.app-shell .app-sidebar {
+  top: var(--ws-header-h) !important;
+  height: calc(100vh - var(--ws-header-h)) !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+/* ---- 83.3 Account block: name and plan are one unit ------
+   Previously the plan row inherited a left offset and extra
+   vertical box from earlier layers, so "Free plan" floated
+   well below and right of the name.                         */
+.app-shell .sidebar-account-block .dashboard-account-btn {
+  min-height: 0 !important;
+  padding: 8px 10px !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-avatar {
+  flex: 0 0 32px !important;
+  align-self: center !important;
+  margin: 0 !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-copy > strong {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  line-height: 15px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+.app-shell .sidebar-account-block .account-plan-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  line-height: 13px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row > small {
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 9px !important;
+  line-height: 13px !important;
+  white-space: nowrap !important;
+}
+
+/* ---- 83.4 Main column right edge -------------------------
+   Cards were clipped on the right because the main column
+   carried no right gutter of its own once the fixed sidebar
+   took its width out of the flow.                           */
+.app-shell .workspace-main {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  width: calc(100% - var(--ws-sidebar)) !important;
+  margin-left: var(--ws-sidebar) !important;
+  padding-right: max(var(--ws-gutter), 28px) !important;
+  min-height: calc(100vh - var(--ws-header-h)) !important;
+}
+.app-shell .page-frame,
+.app-shell .workspace-main > section {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (max-width: 760px) {
+  :root { --ws-header-h: 62px; --ws-gutter: 14px; }
+  .app-shell .app-sidebar {
+    position: sticky !important;
+    top: var(--ws-header-h) !important;
+    height: auto !important;
+    z-index: 150 !important;
+  }
+  .app-shell .workspace-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: var(--ws-gutter) !important;
+    padding-right: var(--ws-gutter) !important;
+  }
+}
+
+
+/* =========================================================
+   V85 : FIXED WORKSPACE SHELL + ACCOUNT VISIBILITY
+   The desktop workspace header and navigation rail are pinned
+   to the viewport. The account popover is allowed to escape the
+   rail so it cannot be clipped by the rail's scroll container.
+   ========================================================= */
+:root {
+  --ws-header-h: 72px;
+  --ws-gutter: 24px;
+}
+
+html {
+  scroll-padding-top: var(--ws-header-h) !important;
+}
+
+@media (min-width: 761px) {
+  .app-shell {
+    padding-top: var(--ws-header-h) !important;
+  }
+
+  .app-shell .app-header {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    width: 100% !important;
+    height: var(--ws-header-h) !important;
+    z-index: 500 !important;
+    box-sizing: border-box !important;
+  }
+
+  .app-shell .app-sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: var(--ws-header-h) !important;
+    bottom: 0 !important;
+    height: calc(100vh - var(--ws-header-h)) !important;
+    z-index: 450 !important;
+    overflow: visible !important;
+  }
+
+  .app-shell .sidebar-account-block {
+    position: relative !important;
+    z-index: 700 !important;
+  }
+
+  .app-shell .sidebar-account-block .account-menu {
+    position: absolute !important;
+    z-index: 1000 !important;
+    top: calc(100% + 8px) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .app-shell .workspace-main {
+    position: relative !important;
+    z-index: 1 !important;
+    padding-top: 34px !important;
+  }
+}
+
+/* The rail is short enough to fit at desktop sizes; on smaller
+   screens it returns to the existing horizontal/mobile behavior. */
+@media (max-width: 760px) {
+  :root { --ws-header-h: 62px; --ws-gutter: 14px; }
+  .app-shell { padding-top: var(--ws-header-h) !important; }
+  .app-shell .app-header {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    width: 100% !important;
+    height: var(--ws-header-h) !important;
+    z-index: 500 !important;
+  }
+  .app-shell .app-sidebar {
+    position: sticky !important;
+    top: var(--ws-header-h) !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
 }

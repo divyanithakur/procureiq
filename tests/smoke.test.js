@@ -39,7 +39,20 @@ test("required security and isolation controls are present in the server", () =>
   assert.match(server, /app\.use\("\/workspace", requireAuthenticatedPage\)/);
   assert.match(server, /WHERE id = \$1 AND clerk_user_id = \$2/);
   assert.match(server, /FROM transactions WHERE clerk_user_id=\$1/);
-  assert.match(server, /express\.json\(\{ limit: "5mb" \}\)/);
+  assert.match(server, /express\.json\(\{ limit: "20mb" \}\)/);
+});
+
+test("V85 PDF appendix, connectors and account alignment are data-driven", () => {
+  const script = read("public/script.js");
+  const css = read("public/workspace.css");
+  const overview = read("public/workspace/overview.html");
+  assert.doesNotMatch(script, /while\(pageChunks\.length<4\)/);
+  assert.match(script, /const appendixPages = transactions\.length/);
+  assert.match(script, /const appendixPageSize = 22/);
+  assert.match(script, /const count=Math\.max\(0,Number\(item\[1\]\)\|\|0\)/);
+  assert.match(script, /doc\.text\(\"→\",x\+boxW\+5,decisionY\+59/);
+  assert.match(css, /V82 FINAL ACCOUNT ALIGNMENT/);
+  assert.match(overview, /<span class="account-plan-row"><small id="dashboardAccountPlan">Free plan<\/small><span class="sidebar-upgrade" id="sidebarUpgradeBtn"/);
 });
 
 test("release cache versions are consistent across workspace pages", () => {
@@ -238,12 +251,13 @@ test("V64 keeps Investigate on Overview and opens the drawer in-place", () => {
   assert.match(overview, /id="opportunityDrawer"/);
 });
 
-test("V64 shows an instant evidence summary before the AI request completes", () => {
+test("V71 AI explanation has explicit analyzing, result and retry states", () => {
   const script = read("public/script.js");
   assert.match(script, /const aiInsightCache = new Map\(\)/);
-  assert.match(script, /function buildInstantAIInsight\(button\)/);
-  assert.match(script, /Instant evidence summary shown first/);
+  assert.match(script, /Analyzing evidence/);
   assert.match(script, /aiInsightCache\.set\(cacheKey/);
+  assert.match(script, /Retry AI/);
+  assert.match(script, /Upgrade plan/);
 });
 
 
@@ -320,8 +334,62 @@ test("V64 keeps workspace logo compact for the navigation bar", () => {
   assert.match(css, /app-shell \.app-header \.app-logo \{ width: 128px/);
 });
 
-test("V64 AI explanation is bounded so the evidence summary remains usable", () => {
+test("V71 AI explanation is bounded and quota-aware", () => {
   const script = read("public/script.js");
-  assert.match(script, /setTimeout\(\(\) => controller\.abort\(\), 4500\)/);
-  assert.match(script, /Instant evidence summary shown first/);
+  assert.match(script, /setTimeout\(\(\) => controller\.abort\(\), 20000\)/);
+  assert.match(script, /AI limit reached/);
+  assert.match(script, /window\.procureIQLoadAIUsage/);
+});
+
+
+test("V70 homepage replaces repetitive text blocks with a product visual preview", () => {
+  const html = read("public/index.html");
+  assert.match(html, /p27-product-preview/);
+  assert.match(html, /p27-product-window/);
+  assert.match(html, /ILLUSTRATIVE WORKFLOW/);
+  assert.doesNotMatch(html, /demo-video/);
+});
+
+test("V70 workspace account exposes plan upgrade and structured token status", () => {
+  const html = read("public/workspace/overview.html");
+  assert.match(html, /dashboardAccountPlan/);
+  assert.match(html, /sidebarUpgradeBtn/);
+  assert.match(html, /workspace-token-status/);
+  assert.match(html, /headerTokenProgress/);
+});
+
+test("V70 upload path accepts larger JSON payloads and reports server failures clearly", () => {
+  const server = read("server.js");
+  const script = read("public/script.js");
+  assert.match(server, /express\.json\(\{ limit: "20mb" \}\)/);
+  assert.match(script, /response\.status === 413/);
+  assert.match(script, /response\.status === 402 && result\.upgrade_required/);
+  assert.match(server, /inserted\+\+;\n    \}/);
+});
+
+test("V77 header is fixed and keeps the compact token utility before Home", () => {
+  const css = read("public/workspace.css");
+  assert.match(css, /position:\s*fixed\s*!important/);
+  assert.match(css, /top:\s*0\s*!important/);
+  assert.match(css, /z-index:\s*9999\s*!important/);
+  assert.match(css, /padding-top:\s*64px\s*!important/);
+  assert.match(css, /\.workspace-token-status\s*\{\s*order:\s*1\s*!important/);
+  assert.match(css, /\.workspace-home-btn\s*\{\s*order:\s*2\s*!important/);
+  assert.match(css, /background:\s*conic-gradient\(#2d6dcc calc\(var\(--token-used, 0\) \* 1%\)/);
+  for (const page of ["overview", "analyze", "act", "billing", "chat", "control", "help", "reports"]) {
+    const html = read(`public/workspace/${page}.html`);
+    assert.match(html, /header-token-label">Tokens<\//);
+    assert.doesNotMatch(html, /AI TOKENS/);
+  }
+  assert.match(read("public/script.js"), /style\.setProperty\("--token-used", String\(pct\)\)/);
+});
+
+test("AI investigation state is reset and response-bound to the selected transaction", () => {
+  const script = read("public/script.js");
+  assert.match(script, /ai\.textContent = ""/);
+  assert.match(script, /ai\.dataset\.transactionId = String\(item\.id \|\| ""\)/);
+  assert.match(script, /function isCurrentAIInsightTarget\(transactionId, box\)/);
+  assert.match(script, /String\(drawer\?\.dataset\.transactionId \|\| ""\) === id/);
+  assert.match(script, /if \(!isCurrentAIInsightTarget\(transactionId, box\)\) return;/);
+  assert.match(script, /const cacheKey = String\(transactionId\)/);
 });

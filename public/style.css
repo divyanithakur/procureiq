@@ -3860,3 +3860,255 @@ table,.match-table,.rfq-preview,.risk-summary-grid{max-width:100%;box-sizing:bor
   .opportunity-filters label{min-width:0;flex:1 1 140px;}
   .opportunity-filters .clear-filter{margin-left:0;width:100%;}
 }
+
+
+/* V69: replace the unused homepage video with a clear product decision loop. */
+.p27-decision-loop { width:min(1180px,calc(100% - 48px)); margin:0 auto; padding:96px 0; border-top:1px solid #e7e9ed; }
+.p27-loop-grid { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid #e2e7ed; border-left:1px solid #e2e7ed; }
+.p27-loop-grid article { min-height:190px; padding:24px 22px; background:#fff; border-right:1px solid #e2e7ed; border-bottom:1px solid #e2e7ed; }
+.p27-loop-grid article span { display:block; margin-bottom:34px; color:#245dcc; font-size:10px; font-weight:800; letter-spacing:.14em; }
+.p27-loop-grid article strong { display:block; color:#172b45; font-size:21px; letter-spacing:-.025em; }
+.p27-loop-grid article p { margin:9px 0 0; color:#68798d; font-size:12px; line-height:1.65; }
+
+/* V69: visible account plan + AI token status in the workspace header. */
+.account-menu-plan { display:block; margin-top:3px; color:#1769d8 !important; font-size:10px !important; font-weight:800 !important; }
+.app-shell .app-header { display:flex; align-items:center; gap:14px; }
+.workspace-token-status { margin-left:auto; min-width:196px; padding:7px 11px; border:1px solid #e1e8f0; border-radius:9px; background:#f8fafc; display:grid; grid-template-columns:auto 1fr; column-gap:9px; align-items:center; }
+.workspace-token-status .header-token-label { grid-column:1/-1; color:#8a98a9; font-size:8px; font-weight:900; letter-spacing:.13em; }
+.workspace-token-status strong { color:#1769d8; font-size:13px; line-height:1.1; }
+.workspace-token-status small { color:#6f8196; font-size:9px; white-space:nowrap; }
+.workspace-token-status small span { color:#314b68; font-weight:800; }
+@media(max-width:900px){ .workspace-token-status { min-width:160px; } .workspace-token-status small { font-size:8px; } }
+@media(max-width:700px){ .workspace-token-status { min-width:0; padding:6px 8px; grid-template-columns:1fr; row-gap:2px; } .workspace-token-status .header-token-label { font-size:7px; } .workspace-token-status strong { font-size:11px; } .workspace-token-status small { font-size:7px; } .p27-decision-loop { width:calc(100% - 28px); padding:68px 0; } .p27-loop-grid { grid-template-columns:1fr; } .p27-loop-grid article { min-height:auto; padding:18px; } .p27-loop-grid article span { margin-bottom:18px; } }
+
+
+/* =========================================================
+   V70 — PRODUCT-LED HOMEPAGE + ACCOUNT USAGE POLISH
+   No generated imagery: the product preview is built from the real UI language.
+========================================================= */
+.p27-product-preview{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:104px 0;display:grid;grid-template-columns:minmax(280px,.78fr) minmax(520px,1.22fr);gap:70px;align-items:center;border-top:1px solid #e2e7ed}
+.p27-preview-copy{max-width:440px}.p27-preview-copy h2{margin:10px 0 16px;color:#172b45;font-size:clamp(32px,4vw,48px);line-height:1.08;letter-spacing:-.045em}.p27-preview-copy>p{color:#68798d;font-size:15px;line-height:1.75}.p27-preview-points{margin-top:30px;border-top:1px solid #e2e7ed}.p27-preview-points>div{display:grid;grid-template-columns:34px 1fr;column-gap:12px;padding:16px 0;border-bottom:1px solid #e2e7ed}.p27-preview-points span{grid-row:span 2;color:#245dcc;font-size:10px;font-weight:800;letter-spacing:.1em}.p27-preview-points strong{font-size:13px;color:#243953}.p27-preview-points small{margin-top:3px;color:#78889b;font-size:11px}
+.p27-product-window{background:#fff;border:1px solid #dbe3ec;border-radius:18px;box-shadow:0 24px 70px rgba(18,43,69,.12);overflow:hidden}.p27-window-bar{height:48px;padding:0 15px;border-bottom:1px solid #e5eaf0;background:#f8fafc;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}.p27-window-bar>div{display:flex;gap:5px}.p27-window-bar>div span{width:7px;height:7px;border-radius:50%;background:#c4ced9}.p27-window-bar small{font-size:10px;color:#718198;font-weight:700}.p27-window-bar b{font-size:8px;color:#8a98a8;letter-spacing:.1em}.p27-window-body{display:grid;grid-template-columns:40% 60%;min-height:355px}.p27-window-list{border-right:1px solid #e5eaf0;background:#fbfcfe}.p27-window-list-head{padding:17px 18px 11px;display:flex;justify-content:space-between;color:#8a98a8;font-size:8px;font-weight:900;letter-spacing:.12em}.p27-op-row{display:flex;justify-content:space-between;gap:10px;padding:17px 18px;border-top:1px solid #edf1f5}.p27-op-row.active{background:#f2f6fb;border-left:3px solid #245dcc;padding-left:15px}.p27-op-row strong{display:block;font-size:11px;color:#243953}.p27-op-row small{display:block;margin-top:4px;color:#8190a1;font-size:9px}.p27-op-row em{align-self:flex-start;font-style:normal;color:#245dcc;background:#edf4ff;border:1px solid #d7e5fa;border-radius:6px;padding:4px 6px;font-size:8px;font-weight:800}.p27-window-detail{padding:25px}.p27-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:18px;border-bottom:1px solid #e8edf2}.p27-detail-head span{font-size:8px;color:#8795a6;font-weight:900;letter-spacing:.13em}.p27-detail-head h3{margin-top:6px;font-size:21px;color:#172b45;letter-spacing:-.03em}.p27-detail-head>strong{padding:6px 8px;border:1px solid #dbe8f7;background:#f3f7fc;color:#245dcc;border-radius:6px;font-size:8px;letter-spacing:.08em}.p27-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.p27-evidence-grid div{padding:13px;border:1px solid #e5eaf0;border-radius:9px;background:#fbfcfe}.p27-evidence-grid small{display:block;color:#8a98a8;font-size:7px;font-weight:900;letter-spacing:.1em}.p27-evidence-grid strong{display:block;margin-top:7px;color:#2a405d;font-size:11px}.p27-evidence-chain{margin-top:18px;padding:13px 14px;background:#f7f9fc;border:1px solid #e4eaf1;border-radius:9px}.p27-evidence-chain>span{font-size:8px;color:#8795a6;font-weight:900;letter-spacing:.1em}.p27-evidence-chain>div{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px}.p27-evidence-chain b{font-size:9px;color:#304762}.p27-evidence-chain i{font-style:normal;color:#9aa8b8}.p27-detail-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}.p27-detail-footer span{font-size:8px;color:#8291a2;line-height:1.4}.p27-detail-footer button{border:0;border-radius:7px;padding:9px 12px;background:#245dcc;color:#fff;font-size:9px;font-weight:800}
+.workspace-token-status{margin-left:auto;min-width:220px;padding:9px 12px;border:1px solid #d9e2ec;border-radius:10px;background:#fff;box-shadow:0 5px 18px rgba(18,43,69,.07);display:grid;gap:6px}.token-status-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.workspace-token-status .header-token-label{color:#7c8b9c;font-size:8px;font-weight:900;letter-spacing:.12em}.workspace-token-status strong{color:#173b67;font-size:13px;line-height:1.1}.token-status-track{height:6px;background:#e9eef4;border-radius:99px;overflow:hidden}.token-status-track span{display:block;height:100%;width:0;background:#2d6dcc;border-radius:inherit;transition:width .35s ease}.token-status-meta{display:flex;justify-content:space-between;color:#7a899b;font-size:8px}.token-status-meta b{color:#435a74;font-weight:800}.account-plan-row{display:flex;align-items:center;gap:7px;margin-top:2px}.sidebar-upgrade{border:1px solid #cbdced;background:#f3f7fc;color:#245dcc;border-radius:5px;padding:3px 6px;font-size:8px;font-weight:800;line-height:1;cursor:pointer}.sidebar-upgrade:hover{background:#e8f1fc;border-color:#b8cee7}
+@media(max-width:1000px){.p27-product-preview{grid-template-columns:1fr;gap:45px}.p27-preview-copy{max-width:700px}.workspace-token-status{min-width:190px}.p27-window-body{min-height:320px}}
+@media(max-width:700px){.p27-product-preview{width:calc(100% - 28px);padding:68px 0}.p27-window-body{grid-template-columns:1fr}.p27-window-list{border-right:0;border-bottom:1px solid #e5eaf0}.p27-window-detail{padding:19px}.p27-window-bar{grid-template-columns:auto 1fr}.p27-window-bar b{display:none}.workspace-token-status{min-width:155px;padding:7px 9px}.workspace-token-status .header-token-label{font-size:7px}.workspace-token-status strong{font-size:11px}.token-status-meta{font-size:7px}}
+
+
+/* =========================================================
+   V71 — DECISION LOOP + AI EXPLANATION STATES
+   Clean B2B presentation: evidence first, minimal chrome.
+   ========================================================= */
+.p27-workflow{
+  grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);
+  gap:64px;
+  padding:88px 0;
+}
+.p27-workflow-copy{max-width:470px}
+.p27-workflow-copy h2{max-width:460px}
+.p27-workflow-copy p{max-width:430px;margin-top:16px!important}
+.p27-steps{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0;
+  border:1px solid #e1e6ec;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+}
+.p27-steps>article{
+  min-height:190px;
+  padding:24px 23px;
+  border-left:0;
+  border-right:1px solid #e1e6ec;
+  border-bottom:1px solid #e1e6ec;
+  background:#fff;
+}
+.p27-steps>article:nth-child(2n){border-right:0}
+.p27-steps>article:nth-child(3),
+.p27-steps>article:nth-child(4){border-bottom:0}
+.p27-steps b{
+  margin-bottom:28px;
+  color:#245dcc;
+}
+.p27-steps span{
+  color:#172b45;
+  font-size:16px;
+  letter-spacing:-.01em;
+}
+.p27-steps small{
+  margin-top:8px;
+  color:#6f7e90;
+  font-size:11px;
+  line-height:1.6;
+}
+.p27-steps em{
+  display:inline-flex;
+  margin-top:16px;
+  padding:5px 7px;
+  border:1px solid #dfe6ee;
+  border-radius:5px;
+  color:#718196;
+  font-style:normal;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+
+/* AI flow: Analyzing → Result → Error/Retry */
+.ai-insight-analyzing{
+  background:#f8fafc!important;
+  border-color:#dfe7f0!important;
+}
+.ai-state-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#2d6dcc;
+  box-shadow:0 0 0 4px #eaf1fb;
+}
+.ai-insight-analyzing>p,
+.ai-insight-error>p{
+  margin:0!important;
+  color:#6f7e90!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.ai-insight-error{
+  background:#fff!important;
+  border-color:#e3e8ee!important;
+}
+.ai-insight-error .ai-insight-header{
+  color:#263b54!important;
+}
+.ai-error-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+}
+.ai-error-actions .primary-cta,
+.ai-error-actions .secondary-btn{
+  text-decoration:none;
+  font-size:10px!important;
+  min-height:34px;
+}
+@media(max-width:900px){
+  .p27-workflow{grid-template-columns:1fr;gap:35px}
+}
+@media(max-width:620px){
+  .p27-workflow{padding:68px 0}
+  .p27-steps{grid-template-columns:1fr}
+  .p27-steps>article,
+  .p27-steps>article:nth-child(2n),
+  .p27-steps>article:nth-child(3){
+    border-right:0;
+    border-bottom:1px solid #e1e6ec;
+  }
+  .p27-steps>article:last-child{border-bottom:0}
+}
+
+
+/* V81 FINAL — account/header alignment + PDF layout polish */
+.app-shell .app-header {
+  padding-left: 16px !important;
+  padding-right: 24px !important;
+}
+.app-shell .app-header .app-brand {
+  transform: none !important;
+  margin-left: 0 !important;
+}
+
+/* Put the plan directly beneath the account name, with Upgrade beside it. */
+.app-shell .sidebar-account-block .dashboard-account-btn {
+  min-height: 48px !important;
+  padding: 7px 8px !important;
+}
+.app-shell .sidebar-account-block .dashboard-account-copy {
+  align-self: center !important;
+  gap: 3px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row {
+  margin: 0 0 0 42px !important;
+  padding: 0 !important;
+  min-height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+.app-shell .sidebar-account-block .account-plan-row small {
+  font-size: 9px !important;
+  line-height: 14px !important;
+}
+.app-shell .sidebar-account-block .sidebar-upgrade {
+  padding: 3px 7px !important;
+  font-size: 8px !important;
+  line-height: 12px !important;
+}
+
+@media (max-width: 760px) {
+  .app-shell .app-header {
+    padding-left: 14px !important;
+    padding-right: 12px !important;
+  }
+}
+
+
+/* V86 STRICT FIX — workspace header/account alignment + report artifact cleanup
+   These rules intentionally override the older visual iterations above. */
+@media (min-width: 761px) {
+  .app-shell .app-header {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    width: 100% !important;
+    height: 82px !important;
+    min-height: 82px !important;
+    margin: 0 !important;
+    padding: 0 24px 0 34px !important;
+    box-sizing: border-box !important;
+    z-index: 1000 !important;
+  }
+
+  .app-shell .app-brand {
+    margin: 0 !important;
+    transform: none !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+  }
+
+  .app-shell .app-header .app-logo {
+    width: 174px !important;
+    min-width: 174px !important;
+    max-width: 174px !important;
+    height: auto !important;
+    max-height: 56px !important;
+    object-fit: contain !important;
+  }
+
+  .app-shell .app-sidebar {
+    top: 82px !important;
+    z-index: 900 !important;
+  }
+
+  .app-shell > main.workspace-main,
+  .app-shell > main#dashboardOverview {
+    margin-top: 110px !important;
+  }
+
+  .app-shell .sidebar-account-block {
+    overflow: visible !important;
+    position: relative !important;
+  }
+
+  .app-shell .sidebar-account-block .account-menu {
+    z-index: 1100 !important;
+  }
+}
+
+/* Never allow the decision-flow connector area to expose text artifacts. */
+@media (min-width: 761px) {
+  .app-shell .decision-flow-connector,
+  .app-shell .decision-flow > .connector {
+    display: none !important;
+  }
+}

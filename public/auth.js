@@ -546,7 +546,10 @@
         ["accountMenuEmail"].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=email; });
         ["dashboardAccountAvatar"].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=initials; });
         if (planLabel) {
-            ["settingsPlan"].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=planLabel; });
+            ["settingsPlan", "dashboardAccountPlan", "accountMenuPlan"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = planLabel;
+            });
         }
     }
 
@@ -589,6 +592,8 @@
         const profile = document.getElementById("accountProfileBtn");
         const settings = document.getElementById("accountSettingsBtn");
         const billing = document.getElementById("accountBillingBtn");
+        const sidebarUpgrade = document.getElementById("sidebarUpgradeBtn");
+        const headerUpgrade = document.getElementById("headerTokenUpgradeBtn");
         const help = document.getElementById("accountHelpBtn");
         const signOut = document.getElementById("accountSignOutBtn");
 
@@ -776,6 +781,12 @@
         });
 
         billing?.addEventListener("click", (event) => { event.preventDefault(); closeMenu(); window.location.assign("/workspace/billing"); });
+        const goBilling = (event) => { event.preventDefault(); event.stopPropagation(); window.location.assign("/workspace/billing"); };
+        sidebarUpgrade?.addEventListener("click", goBilling);
+        headerUpgrade?.addEventListener("click", goBilling);
+        sidebarUpgrade?.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") goBilling(event);
+        });
         help?.addEventListener("click", (event) => { event.preventDefault(); closeMenu(); window.location.assign("/workspace/help"); });
         signOut?.addEventListener("click", async (event) => {
             event.preventDefault();

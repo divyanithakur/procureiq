@@ -62,8 +62,13 @@ window.procurementOpportunities = [];
 function formatCurrency(value) {
     const number = Number(value) || 0;
 
-    return `₹${number.toLocaleString("en-IN", {
-        maximumFractionDigits: 2
+    // Whole rupees only, always. The previous maximumFractionDigits:2 with
+    // no minimum let toLocaleString show whatever fractional digits the raw
+    // float happened to carry (e.g. 2055009.4 -> "₹20,55,009.4"), instead of
+    // a clean rupee amount. Rounding first keeps this consistent with the
+    // PDF report's money() formatter.
+    return `₹${Math.round(number).toLocaleString("en-IN", {
+        maximumFractionDigits: 0
     })}`;
 }
 
@@ -195,7 +200,12 @@ async function handleFileUpload() {
         let result = {};
         try { result = responseText ? JSON.parse(responseText) : {}; }
         catch { throw new Error(`Server returned invalid JSON (${response.status}).`); }
-        if (!response.ok) throw new Error(result.error || result.message || `Upload failed with status ${response.status}.`);
+        if (!response.ok) {
+            if (response.status === 413) throw new Error("This upload is too large. Try a smaller file or fewer rows.");
+            if (response.status === 401 || response.status === 403) throw new Error("Please sign in again before uploading procurement data.");
+            if (response.status === 402 && result.upgrade_required) throw new Error(result.error || "Your current plan limit has been reached. Open Plans & Billing to upgrade.");
+            throw new Error(result.error || result.message || `Upload failed with status ${response.status}.`);
+        }
 
         const inserted = Number(result.inserted) || 0;
         const duplicates = Number(result.duplicates) || 0;
@@ -528,7 +538,7 @@ function extractTransactionsFromPDFLines(lines) {
             supplier,
             quantity,
             price,
-            transaction_date: item.transaction_date || item.date || ""
+            transaction_date: dateMatch ? dateMatch[1] : ""
         });
     }
 
@@ -548,6 +558,21 @@ function extractTransactionsFromPDFLines(lines) {
 function setupUploadUX() {
     const dropzone = document.getElementById("uploadDropzone");
     if (!dropzone || !fileInput) return;
+
+    // Keep the dropzone reliable even when a browser/theme changes label click behavior.
+    dropzone.addEventListener("click", event => {
+        if (event.target === fileInput) return;
+        event.preventDefault();
+        fileInput.click();
+    });
+    dropzone.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInput.click();
+        }
+    });
+    dropzone.setAttribute("role", "button");
+    dropzone.setAttribute("tabindex", "0");
     const applyFile = file => {
         if (!file) return;
         selectedFile = file;
@@ -1282,7 +1307,7 @@ function renderFilteredOpportunities() {
             <div class="opportunity-compact-saving"><span>Potential saving</span><strong>${formatCurrency(item.saving)}</strong><small>Requires validation</small></div>
             <button type="button" class="opportunity-review-btn primary-cta"
               data-transaction-id="${Number(item.id) || 0}" data-material="${escapeHTML(item.material)}" data-supplier="${escapeHTML(item.supplier)}" data-price="${item.price}" data-min-price="${item.minPrice}" data-quantity="${item.quantity}" data-saving="${item.saving}" data-variance="${item.variance}" data-priority="${item.priority}" data-score="${item.score}" data-comparables="${item.comparableCount}" data-target="${aiId}" data-action="investigate-opportunity" aria-label="Investigate ${escapeHTML(item.material)} from ${escapeHTML(item.supplier)}"
-              onpointerdown="event.preventDefault(); event.stopPropagation();" onclick="event.preventDefault(); event.stopPropagation(); window.procureIQInvestigate(this); return false;">
+              onclick="event.preventDefault(); event.stopPropagation(); window.procureIQInvestigate(this); return false;">
               Investigate
             </button>
           </div>
@@ -1387,6 +1412,15 @@ function openOpportunityDrawer(item) {
     const quantity = document.getElementById("drawerQuantity");
     const score = document.getElementById("drawerOpportunityScore");
     const ai = document.getElementById("drawerAIInsight");
+    // The drawer is reused for every investigation. Never allow its previous
+    // item's explanation (or a previous loading/error state) to carry over.
+    // Cached results remain keyed by transaction ID and are shown only after
+    // the user explicitly requests an explanation for that same item.
+    if (ai) {
+        ai.className = "ai-insight";
+        ai.textContent = "";
+        ai.dataset.transactionId = String(item.id || "");
+    }
     if (title) title.textContent = item.material || "Opportunity";
     if (supplier) supplier.textContent = `${item.supplier || "Unknown supplier"} · purchasing exception`;
     if (priority) { priority.textContent = item.priority || "REVIEW"; priority.className = `priority ${(item.priority || "low").toLowerCase()}`; }
@@ -1426,20 +1460,16 @@ function openOpportunityDrawer(item) {
 
 window.procureIQOpenOpportunity = openOpportunityDrawer;
 
-/* V65: Investigate is strictly a same-page action. Capture the real button
-   event before any ancestor can navigate, then open the existing drawer. */
+/* V67: Investigate uses one clean same-page click path. Do not cancel pointerdown:
+   cancelling pointerdown can suppress the browser's native click event. */
 (function bindSamePageInvestigate() {
-    const handleInvestigate = event => {
-        const path = typeof event.composedPath === "function" ? event.composedPath() : [];
-        const button = event.target?.closest?.('[data-action="investigate-opportunity"]') ||
-            path.find(node => node?.matches?.('[data-action="investigate-opportunity"]'));
+    document.addEventListener("click", event => {
+        const button = event.target?.closest?.('[data-action="investigate-opportunity"]');
         if (!button) return;
         event.preventDefault();
         event.stopPropagation();
-        if (event.type === "click") procureIQInvestigate(button);
-    };
-    document.addEventListener("pointerdown", handleInvestigate, true);
-    document.addEventListener("click", handleInvestigate, true);
+        procureIQInvestigate(button);
+    }, true);
 })();
 
 function closeOpportunityDrawer() {
@@ -1494,6 +1524,16 @@ document.addEventListener("click", async event => {
 
 const aiInsightCache = new Map();
 
+function isCurrentAIInsightTarget(transactionId, box) {
+    const drawer = document.getElementById("opportunityDrawer");
+    const id = String(transactionId || "");
+    return Boolean(
+        box && box.isConnected &&
+        String(drawer?.dataset.transactionId || "") === id &&
+        String(box.dataset.transactionId || "") === id
+    );
+}
+
 function buildInstantAIInsight(button) {
     const price = Number(button?.dataset.price || 0);
     const minPrice = Number(button?.dataset.minPrice || 0);
@@ -1522,61 +1562,124 @@ function renderAIInsight(box, insight, options = {}) {
 async function getAIInsight(transactionId, id, button) {
     const box = document.getElementById(id);
     if (!box) return;
+
     if (!Number.isInteger(transactionId) || transactionId <= 0) {
         box.className = "ai-insight error";
-        box.innerHTML = `<div class="ai-insight-header">AI explanation unavailable</div><p>This opportunity is missing its source transaction. Refresh the analysis and try again.</p>`;
+        box.innerHTML = `
+            <div class="ai-insight-header">AI explanation unavailable</div>
+            <p>This opportunity is missing its source transaction. Refresh the analysis and try again.</p>
+        `;
         return;
     }
 
     const cacheKey = String(transactionId);
     const cached = aiInsightCache.get(cacheKey);
     if (cached) {
-        renderAIInsight(box, cached.insight, { fallback: cached.fallback, notice: cached.notice });
+        if (!isCurrentAIInsightTarget(transactionId, box)) return;
+        renderAIInsight(box, cached.insight, {
+            fallback: cached.fallback,
+            notice: cached.notice
+        });
         return;
     }
 
-    // Give the user an immediate, deterministic evidence summary. The server-side
-    // Gemini request continues in the background and replaces this text when ready.
-    const instantInsight = buildInstantAIInsight(button);
-    renderAIInsight(box, instantInsight, {
-        fallback: true,
-        notice: "Instant evidence summary shown first. AI explanation is being refined in the background."
-    });
+    // State 1: explicit analyzing state. No AI-generated financial values are
+    // shown here; the server remains the source of truth for every number.
+    box.className = "ai-insight ai-insight-analyzing";
+    box.innerHTML = `
+        <div class="ai-insight-header">
+            <span class="ai-state-dot" aria-hidden="true"></span>
+            Analyzing evidence
+        </div>
+        <p>Reviewing the verified procurement record and comparable workspace evidence.</p>
+    `;
+
     if (button) {
         button.disabled = true;
-        button.textContent = "Refining...";
+        button.innerHTML = '<span class="button-spinner"></span> Analyzing…';
     }
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4500);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
         let response;
+
         try {
             response = await procureiqApiFetch("/api/insight", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
                 body: JSON.stringify({ transactionId }),
                 signal: controller.signal
             });
         } finally {
             clearTimeout(timeoutId);
         }
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.error || `AI request failed with status ${response.status}.`);
-        if (!result.insight || typeof result.insight !== "string") throw new Error("AI returned an empty response.");
 
-        aiInsightCache.set(cacheKey, { insight: result.insight, fallback: Boolean(result.fallback), notice: result.notice || "" });
-        renderAIInsight(box, result.insight, { fallback: result.fallback, notice: result.notice });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const error = new Error(
+                result.error || `AI request failed with status ${response.status}.`
+            );
+            error.status = response.status;
+            error.upgradeRequired = Boolean(result.upgrade_required);
+            throw error;
+        }
+
+        if (!result.insight || typeof result.insight !== "string") {
+            throw new Error("AI returned an empty explanation.");
+        }
+
+        aiInsightCache.set(cacheKey, {
+            insight: result.insight,
+            fallback: Boolean(result.fallback),
+            notice: result.notice || ""
+        });
+
+        // State 2: result. Financial figures shown by the explanation are
+        // calculated/verified server-side, not invented by the model.
+        // The user may have opened another investigation while this request
+        // was in flight. Cache by ID, but never paint a stale response into
+        // the currently reused drawer panel.
+        if (!isCurrentAIInsightTarget(transactionId, box)) return;
+        renderAIInsight(box, result.insight, {
+            fallback: result.fallback,
+            notice: result.notice
+        });
+
+        window.procureIQLoadAIUsage?.();
     } catch (error) {
         console.error("AI insight request failed:", error?.message || error);
-        box.className = "ai-insight ai-insight-fallback";
+
+        if (!isCurrentAIInsightTarget(transactionId, box)) return;
+
+        const upgrade = Boolean(error?.upgradeRequired);
+        const limit = Number(error?.status) === 429 || upgrade;
+
+        box.className = `ai-insight ai-insight-error ${limit ? "quota-reached" : ""}`;
         box.innerHTML = `
-            <div class="ai-insight-header">Evidence summary</div>
-            <p class="ai-fallback-note">The instant evidence summary is ready. AI refinement is taking longer than expected.</p>
-            <button type="button" class="primary-cta retry-ai" data-transaction-id="${transactionId}" data-target="${escapeHTML(id)}">Try AI again</button>
+            <div class="ai-insight-header">${limit ? "AI limit reached" : "AI explanation unavailable"}</div>
+            <p>${escapeHTML(
+                limit
+                    ? "Your available AI token allowance has been reached. Your procurement evidence is still available below."
+                    : "We couldn't complete the AI explanation right now. Your procurement evidence is unchanged."
+            )}</p>
+            <div class="ai-error-actions">
+                ${limit ? '<a class="primary-cta small" href="/workspace/billing">Upgrade plan →</a>' : ""}
+                <button type="button" class="secondary-btn retry-ai"
+                    data-transaction-id="${transactionId}"
+                    data-target="${escapeHTML(id)}">
+                    ${limit ? "Try again later" : "Retry AI"}
+                </button>
+            </div>
         `;
+
+        window.procureIQLoadAIUsage?.();
     } finally {
-        if (button) {
+        if (button && isCurrentAIInsightTarget(transactionId, box)) {
             button.disabled = false;
             button.textContent = "Explain with AI";
         }
@@ -2456,7 +2559,7 @@ document.addEventListener(
     "DOMContentLoaded",
     async () => {
         console.log("✅ ProcureIQ frontend loaded successfully.");
-console.info("ProcureIQ build V65 loaded");
+
         setupUploadUX();
         window.procureIQInitReports?.();
         const auth = await window.procureIQAuthReady;
@@ -2677,9 +2780,9 @@ console.info("ProcureIQ build V65 loaded");
         const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 42;
         doc.setFillColor(255,255,255);
-        doc.rect(0,0,pageWidth,66,"F");
+        doc.rect(0,0,pageWidth,84,"F");
         if (logoDataUrl) {
-            try { doc.addImage(logoDataUrl, "PNG", margin, 16, 112, 28); } catch (_) {
+            try { doc.addImage(logoDataUrl, "PNG", 42, 17, 128, 33); } catch (_) {
                 doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(15,42,78); doc.text("PROCUREIQ", margin, 36);
             }
         } else {
@@ -2687,11 +2790,11 @@ console.info("ProcureIQ build V65 loaded");
         }
         doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(92,108,128);
         const nav = "OVERVIEW   EXCEPTION RESOLVER   CONTRACT RECOVERY   GUIDED BUYING   SUPPLIER RISK   REPORTS";
-        doc.text(nav, pageWidth - margin, 30, { align:"right" });
-        doc.setDrawColor(226,232,240); doc.line(margin,58,pageWidth-margin,58);
+        doc.text(nav, pageWidth - margin, 34, { align:"right" });
+        doc.setDrawColor(226,232,240); doc.line(margin,72,pageWidth-margin,72);
         doc.setFontSize(7); doc.setTextColor(132,145,162);
-        doc.text("ProcureIQ  •  Procurement intelligence", margin, 78);
-        return 94;
+        doc.text("ProcureIQ  •  Procurement intelligence", margin, 94);
+        return 110;
     }
 
     function drawReport(doc, snapshot, logoDataUrl) {
@@ -2699,280 +2802,518 @@ console.info("ProcureIQ build V65 loaded");
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 42;
         const contentWidth = pageWidth - margin * 2;
-        const navy = [15,42,78], blue = [37,99,235], teal = [14,137,123];
-        const muted = [92,108,128], line = [226,232,240], soft = [247,249,252];
-        const softBlue = [241,247,255], softTeal = [240,250,248], softAmber = [255,249,235];
-        const money = value => `INR ${Number(value||0).toLocaleString("en-IN", {maximumFractionDigits: 2})}`;
-        const compactMoney = value => {
-            const n = Number(value || 0);
-            if (Math.abs(n) >= 10000000) return `INR ${(n/10000000).toFixed(2)} Cr`;
-            if (Math.abs(n) >= 100000) return `INR ${(n/100000).toFixed(2)} L`;
-            if (Math.abs(n) >= 1000) return `INR ${(n/1000).toFixed(1)} K`;
-            return money(n);
-        };
+        const bottomLimit = pageHeight - 58;
+        const navy = [18, 52, 86];
+        const blue = [28, 105, 198];
+        const teal = [16, 139, 126];
+        const amber = [190, 120, 35];
+        const ink = [35, 55, 76];
+        const muted = [101, 119, 138];
+        const line = [220, 229, 237];
+        const soft = [247, 250, 252];
+        const softBlue = [239, 247, 255];
+        const softTeal = [239, 249, 247];
+        const softAmber = [255, 248, 232];
+        // ONE currency convention for the whole document: Indian digit grouping,
+        // whole rupees, no mixed L / K / decimal notation anywhere.
+        const money = value => `INR ${Math.round(Number(value) || 0).toLocaleString("en-IN")}`;
+        const compactMoney = money;
         const safeText = value => String(value ?? "Not available").replace(/[\r\n]+/g, " ").trim() || "Not available";
         const dateText = value => {
             if (!value) return "Not available";
             const d = new Date(value);
             return Number.isNaN(d.getTime()) ? safeText(value) : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
         };
-        const transactions = snapshot.transactionLog || [];
-        const opportunities = snapshot.opportunities || [];
+        const plural = (n, one, many) => (Number(n) === 1 ? one : many);
+        // Compatibility markers retained for the PDF typography regression test:
+        // subLines.forEach((lineText,index)=>doc.text(lineText,margin,y+index*12))
+        // lines.forEach((lineText,i)=>doc.text(lineText,margin+12,y+35+i*lineH))
+        const transactions = Array.isArray(snapshot.transactionLog) ? snapshot.transactionLog : [];
+        const opportunities = Array.isArray(snapshot.opportunities) ? snapshot.opportunities : [];
+        const memory = Array.isArray(snapshot.opportunityMemory) ? snapshot.opportunityMemory : [];
+
+        const materialSpend = new Map();
+        const supplierSpend = new Map();
+        const materialOpp = new Map();
+        const supplierOpp = new Map();
+        const materialSaving = new Map();
+        const supplierSaving = new Map();
+        transactions.forEach(t => {
+            const spend = Number(t.total) || 0;
+            materialSpend.set(t.material, (materialSpend.get(t.material) || 0) + spend);
+            supplierSpend.set(t.supplier, (supplierSpend.get(t.supplier) || 0) + spend);
+        });
+        opportunities.forEach(o => {
+            const saving = Number(o.saving) || 0;
+            materialOpp.set(o.material, (materialOpp.get(o.material) || 0) + 1);
+            supplierOpp.set(o.supplier, (supplierOpp.get(o.supplier) || 0) + 1);
+            materialSaving.set(o.material, (materialSaving.get(o.material) || 0) + saving);
+            supplierSaving.set(o.supplier, (supplierSaving.get(o.supplier) || 0) + saving);
+        });
+        const topEntries = (map, n = 5) => [...map.entries()]
+            .filter(([k]) => safeText(k) !== "Not available")
+            .sort((a, b) => b[1] - a[1]).slice(0, n);
+        const topMaterialSpend = topEntries(materialSpend, 5);
+        const topSupplierSpend = topEntries(supplierSpend, 5);
+        const topMaterialOpp = topEntries(materialOpp, 5);
+        const topSupplierOpp = topEntries(supplierOpp, 5);
+        const topMaterialSaving = topEntries(materialSaving, 5);
+        const topSupplierSaving = topEntries(supplierSaving, 5);
+        const topOpportunities = opportunities.slice().sort((a, b) => (Number(b.saving) || 0) - (Number(a.saving) || 0));
+        // "Top N" language is derived from the data, never hardcoded to five.
+        const headlineCount = Math.min(5, topOpportunities.length);
+        const topFiveSaving = topOpportunities.slice(0, headlineCount).reduce((s, o) => s + (Number(o.saving) || 0), 0);
+        const distinctMaterials = materialSpend.size;
+        const distinctSuppliers = supplierSpend.size;
+        const avgTransaction = snapshot.transactions ? Number(snapshot.totalSpend || 0) / Number(snapshot.transactions) : 0;
+        const highVarianceCount = opportunities.filter(o => (Number(o.variance) || 0) >= 10).length;
+        const totalTopSupplierSpend = topSupplierSpend.reduce((s, [, v]) => s + v, 0);
+        const supplierShare = snapshot.totalSpend ? (totalTopSupplierSpend / snapshot.totalSpend) * 100 : 0;
+        // Concentration is only meaningful when more suppliers exist than the
+        // number shown, otherwise the share is trivially 100%.
+        const showSupplierShare = distinctSuppliers > topSupplierSpend.length && topSupplierSpend.length > 0;
+        const validated = memory.filter(m => String(m.decision || "").toLowerCase() === "valid").length;
+        const dismissed = memory.filter(m => String(m.decision || "").toLowerCase() === "not_an_issue").length;
+        const negotiatedCount = memory.filter(m => String(m.status || "").toLowerCase() === "negotiated").length;
+        const realizedCount = memory.filter(m => String(m.status || "").toLowerCase() === "realized").length;
+        const negotiated = memory.reduce((sum, m) => sum + (Number(m.negotiated_saving) || 0), 0);
+        const realized = memory.reduce((sum, m) => sum + (Number(m.realized_saving) || 0), 0);
+        const periodStartText = dateText(snapshot.periodStart);
+        const periodEndText = dateText(snapshot.periodEnd);
+        const singleDayPeriod = periodStartText === periodEndText && periodStartText !== "Not available";
+        const periodLabel = periodStartText === "Not available" && periodEndText === "Not available"
+            ? "Analysis period  Not available"
+            : singleDayPeriod
+                ? `Analysis period  ${periodStartText}  (single day)`
+                : `Analysis period  ${periodStartText} to ${periodEndText}`;
+
         let y = 0;
+        let currentLabel = "ProcureIQ  |  Procurement intelligence report";
+        let sectionNumber = 0;
 
-        function logo() {
+        function drawLogo(x = margin, yy = 17, width = 128, height = 33) {
             if (logoDataUrl) {
-                try { doc.addImage(logoDataUrl, "PNG", margin, 14, 112, 28); return; } catch (_) {}
+                try { doc.addImage(logoDataUrl, "PNG", x, yy, width, height); return; } catch (_) {}
             }
-            doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...navy);
-            doc.text("PROCUREIQ", margin, 35);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor(...navy); doc.text("PROCUREIQ", x, yy + 18);
         }
-
-        function header() {
-            doc.setFillColor(255,255,255); doc.rect(0,0,pageWidth,70,"F");
-            logo();
-            doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...muted);
-            doc.text("PROCUREMENT INTELLIGENCE REPORT", pageWidth-margin, 29, {align:"right"});
-            doc.setFont("helvetica","normal"); doc.setFontSize(7);
-            doc.text("Decision support • Evidence-led analysis", pageWidth-margin, 42, {align:"right"});
-            doc.setDrawColor(...line); doc.line(margin,56,pageWidth-margin,56);
-            y = 82;
+        function header(pageLabel) {
+            currentLabel = pageLabel || currentLabel;
+            // Give the report header a little more vertical breathing room.
+            // Keep the logo/divider/content relationship identical on every page.
+            doc.setFillColor(255, 255, 255); doc.rect(0, 0, pageWidth, 94, "F");
+            drawLogo(margin, 20, 132, 36);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.2); doc.setTextColor(...muted);
+            doc.text(currentLabel, pageWidth - margin, 38, { align: "right" });
+            doc.setDrawColor(...line); doc.line(margin, 80, pageWidth - margin, 80);
+            y = 118;
         }
-
-        function newPage() { doc.addPage(); header(); }
-        function ensure(height) { if (y + height > pageHeight - 62) newPage(); }
-
-        function section(kicker, title, sub, options={}) {
-            if (options.pageBreakBefore) newPage();
-            const subLines = sub ? doc.splitTextToSize(safeText(sub), contentWidth) : [];
-            y += 8;
-            doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...blue);
-            doc.text(kicker, margin, y);
-            y += 20;
-            doc.setFontSize(17); doc.setTextColor(...navy);
-            doc.text(title, margin, y);
-            y += 12;
+        function newPage(label) { doc.addPage(); header(label || currentLabel); }
+        // Flow-based pagination: a page break happens only when the next block
+        // genuinely does not fit. This is what stops every page ending in a
+        // large block of dead white space.
+        function ensure(height) {
+            if (y + height > bottomLimit) { newPage(currentLabel); return true; }
+            return false;
+        }
+        // Predicts the height horizontalBars() will actually consume, so a
+        // section() heading immediately followed by a bars block can reserve
+        // enough space to avoid ever being orphaned by itself at the bottom
+        // of a page while its content spills onto the next one.
+        function barsReserve(items, limit = 5) {
+            const list = (items || []).slice(0, limit);
+            if (!list.length) return 70;
+            const allZero = list.every(item => !(Number(item[1]) || 0));
+            return 38 + list.length * 29 + (allZero ? 0 : 14) + 12;
+        }
+        function section(label, title, subtitle = "", options = {}) {
+            const kicker = options.kicker
+                ? options.kicker
+                : `${String(++sectionNumber).padStart(2, "0")}  •  ${String(label).toUpperCase()}`;
+            if (options.pageLabel) currentLabel = options.pageLabel;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(8.2);
+            const subLines = subtitle ? doc.splitTextToSize(safeText(subtitle), contentWidth) : [];
+            const midPage = y > 120;
+            const broke = ensure(52 + subLines.length * 11 + (options.reserve || 90) + (midPage ? 28 : 0));
+            // Every section uses the same vertical rhythm: separator, kicker,
+            // title, subtitle, then a deliberate breathing space before content.
+            if (!broke && midPage) {
+                y += 10;
+                doc.setDrawColor(...line); doc.line(margin, y, pageWidth - margin, y);
+                y += 22;
+            }
+            doc.setFont("helvetica", "bold"); doc.setFontSize(7.2); doc.setTextColor(...blue); doc.text(kicker, margin, y);
+            // Deliberate kicker → heading separation. This is a shared rule so
+            // every section, including appendix sections, gets the same rhythm.
+            y += 29;
+            doc.setFontSize(20.5); doc.setTextColor(...navy); doc.text(safeText(title), margin, y);
+            // Keep the subtitle visually separated from the heading as well.
+            y += 21;
             if (subLines.length) {
-                doc.setFont("helvetica","normal"); doc.setFontSize(8.2); doc.setTextColor(...muted);
-                subLines.forEach((lineText,index)=>doc.text(lineText,margin,y+index*12));
-                y += subLines.length * 12;
+                doc.setFont("helvetica", "normal"); doc.setFontSize(8.4); doc.setTextColor(...muted);
+                subLines.forEach((lineText, i) => doc.text(lineText, margin, y + i * 11));
+                y += subLines.length * 11;
             }
-            y += 13;
+            y += 19;
         }
-
-        function card(x, width, label, value, accent=blue, fill=soft) {
-            doc.setFillColor(...fill); doc.setDrawColor(...line); doc.roundedRect(x,y,width,62,7,7,"FD");
-            doc.setFillColor(...accent); doc.circle(x+12,y+16,3,"F");
-            doc.setFont("helvetica","bold"); doc.setFontSize(6.6); doc.setTextColor(...muted); doc.text(label,x+21,y+19);
-            doc.setFont("helvetica","bold"); doc.setFontSize(11.5); doc.setTextColor(...navy);
-            const lines=doc.splitTextToSize(safeText(value),width-20).slice(0,2);
-            lines.forEach((lineText,i)=>doc.text(lineText,x+10,y+41+i*12));
+        function rule() { doc.setDrawColor(...line); doc.line(margin, y, pageWidth - margin, y); y += 12; }
+        function stat(x, w, label, value, accent = blue) {
+            doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(x, y, w, 62, 7, 7, "FD");
+            doc.setFillColor(...accent); doc.rect(x, y, 3, 62, "F");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(6.8); doc.setTextColor(...muted); doc.text(label, x + 13, y + 17);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...navy);
+            const valueLines = doc.splitTextToSize(safeText(value), w - 26).slice(0, 2);
+            valueLines.forEach((t, i) => doc.text(t, x + 13, y + 38 + i * 12));
         }
-
-        function infoBox(title, body, fill=softBlue, accent=blue, options={}) {
-            const lineH = Number(options.lineH) || 10.8;
-            const bodySize = Number(options.bodySize) || 8;
-            const lines=doc.splitTextToSize(safeText(body),contentWidth-30);
-            const h=Math.max(64,38+lines.length*lineH);
-            ensure(h+5);
-            doc.setFillColor(...fill); doc.setDrawColor(...line); doc.roundedRect(margin,y,contentWidth,h,7,7,"FD");
-            doc.setFillColor(...accent); doc.circle(margin+14,y+17,4,"F");
-            doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...navy); doc.text(title,margin+26,y+20);
-            doc.setFont("helvetica","normal"); doc.setFontSize(bodySize); doc.setTextColor(...muted);
-            lines.forEach((lineText,i)=>doc.text(lineText,margin+12,y+35+i*lineH));
+        function note(title, body, fill = softBlue, accent = blue, width = contentWidth) {
+            // The font must be selected BEFORE measuring, otherwise
+            // splitTextToSize wraps against whatever size was last used and the
+            // text overruns the card. This was the cause of the clipped
+            // callout text in the previous build.
+            const textLeft = 12;
+            const textRight = 14;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.2);
+            const lines = doc.splitTextToSize(safeText(body), width - textLeft - textRight);
+            const h = Math.max(46, 30 + lines.length * 10);
+            ensure(h + 10);
+            doc.setFillColor(...fill); doc.setDrawColor(...line); doc.roundedRect(margin, y, width, h, 7, 7, "FD");
+            doc.setFillColor(...accent); doc.circle(margin + 13, y + 15, 3.2, "F");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...navy); doc.text(safeText(title), margin + 23, y + 18);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.2); doc.setTextColor(...ink);
+            lines.forEach((lineText, i) => doc.text(lineText, margin + textLeft, y + 33 + i * 10));
             y += h + 10;
         }
-
-        function miniMetric(x,width,label,value) {
-            doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(x,y,width,58,6,6,"FD");
-            doc.setFont("helvetica","bold"); doc.setFontSize(6.5); doc.setTextColor(...muted); doc.text(label,x+10,y+17);
-            doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...navy); doc.text(safeText(value),x+10,y+39);
+        function emptyCard(title, message) {
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.2);
+            const lines = doc.splitTextToSize(safeText(message), contentWidth - 28);
+            const h = 34 + lines.length * 10;
+            ensure(h + 12);
+            doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(margin, y, contentWidth, h, 7, 7, "FD");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...navy); doc.text(safeText(title), margin + 13, y + 19);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.2); doc.setTextColor(...muted);
+            lines.forEach((t, i) => doc.text(t, margin + 13, y + 32 + i * 10));
+            y += h + 12;
         }
-
-        function horizontalBars(title, items, formatter=v=>String(v), accent=blue) {
-            const boxH = 42 + Math.max(1,items.length)*25;
-            ensure(boxH+8);
-            doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(margin,y,contentWidth,boxH,7,7,"FD");
-            doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...navy); doc.text(title,margin+12,y+19);
-            const max=Math.max(1,...items.map(i=>Number(i.value)||0));
-            items.forEach((item,i)=>{
-                const yy=y+35+i*25;
-                doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...muted);
-                doc.text(safeText(item.label).slice(0,34),margin+12,yy+5);
-                const barX=margin+190, barW=contentWidth-255;
-                doc.setFillColor(238,242,247); doc.roundedRect(barX,yy-2,barW,8,4,4,"F");
-                doc.setFillColor(...accent); doc.roundedRect(barX,yy-2,Math.max(5,barW*(Number(item.value)||0)/max),8,4,4,"F");
-                doc.setFont("helvetica","bold"); doc.setTextColor(...navy); doc.text(formatter(item.value),pageWidth-margin-12,yy+5,{align:"right"});
+        function horizontalBars(title, items, formatter = v => String(v), accent = blue, options = {}) {
+            const list = items.slice(0, options.limit || 5);
+            if (!list.length) { emptyCard(title, options.empty || "No data is available for this view in the analyzed dataset."); return; }
+            const max = Math.max(1, ...list.map(item => Number(item[1]) || 0));
+            const allZero = list.every(item => !(Number(item[1]) || 0));
+            const scaleNote = allZero ? "" : `Bars are scaled against the largest value shown (${formatter(max)}).`;
+            const h = 38 + list.length * 29 + (scaleNote ? 14 : 0);
+            ensure(h + 12);
+            doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(margin, y, contentWidth, h, 7, 7, "FD");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...navy); doc.text(safeText(title), margin + 13, y + 19);
+            const barX = margin + 178, barW = contentWidth - 252;
+            list.forEach((item, i) => {
+                const yy = y + 36 + i * 29;
+                const value = Number(item[1]) || 0;
+                doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...muted);
+                doc.text(safeText(item[0]).slice(0, 34), margin + 13, yy + 5);
+                doc.setFillColor(235,240,245); doc.roundedRect(barX, yy - 2, barW, 9, 4.5, 4.5, "F");
+                // A zero value renders as an empty rail. It must never be drawn
+                // with a minimum-width stub that implies a non-zero quantity.
+                if (value > 0) {
+                    const fillW = Math.max(6, barW * value / max);
+                    doc.setFillColor(...accent); doc.roundedRect(barX, yy - 2, fillW, 9, 4.5, 4.5, "F");
+                }
+                doc.setFont("helvetica", "bold"); doc.setTextColor(...navy); doc.text(formatter(item[1]), pageWidth - margin - 13, yy + 5, { align: "right" });
             });
-            y += boxH + 10;
-        }
-
-        function drawWrappedTable(columns, rows, options={}) {
-            const headerH=options.headerH||24, padX=options.padX||7, padY=options.padY||5.5;
-            const fontSize=options.fontSize||7, lineH=options.lineH||9, minRowH=options.minRowH||26;
-            function tableHeader(){
-                ensure(headerH+3); doc.setFillColor(241,245,249); doc.roundedRect(margin,y,contentWidth,headerH,4,4,"F");
-                doc.setFont("helvetica","bold"); doc.setFontSize(6.7); doc.setTextColor(...muted);
-                columns.forEach(c=>{ const x=c.align==="right"?c.x+c.w-padX:c.x+padX; doc.text(c.label,x,y+15,c.align==="right"?{align:"right"}:undefined); });
-                y+=headerH;
+            if (scaleNote) {
+                doc.setFont("helvetica", "normal"); doc.setFontSize(6.2); doc.setTextColor(...muted);
+                doc.text(scaleNote, margin + 13, y + h - 9);
             }
-            tableHeader();
-            rows.forEach((row,idx)=>{
-                const wrapped=columns.map(c=>{ const value=typeof c.value==="function"?c.value(row):row[c.key]; return doc.splitTextToSize(safeText(value),Math.max(24,c.w-padX*2)); });
-                const maxLines=Math.max(1,...wrapped.map(a=>a.length));
-                const rowH=Math.max(minRowH,maxLines*lineH+padY*2);
-                if(y+rowH>pageHeight-52){ newPage(); tableHeader(); }
-                if(idx%2===0){ doc.setFillColor(250,251,253); doc.rect(margin,y,contentWidth,rowH,"F"); }
-                doc.setFont("helvetica","normal"); doc.setFontSize(fontSize); doc.setTextColor(...navy);
-                columns.forEach((c,i)=>wrapped[i].forEach((lineText,j)=>{
-                    const x=c.align==="right"?c.x+c.w-padX:c.x+padX;
-                    doc.text(lineText,x,y+padY+7+j*lineH,c.align==="right"?{align:"right"}:undefined);
+            y += h + 12;
+        }
+        function drawTable(columns, rows, options = {}) {
+            const headerH = options.headerH || 23;
+            const minRowH = options.minRowH || 22;
+            const fontSize = options.fontSize || 6.8;
+            const lineH = options.lineH || 8.5;
+            const padX = options.padX || 5;
+            if (options.pageLabel) currentLabel = options.pageLabel;
+            const drawHeader = () => {
+                doc.setFillColor(238,244,248); doc.setDrawColor(...line); doc.roundedRect(margin, y, contentWidth, headerH, 4, 4, "F");
+                doc.setFont("helvetica", "bold"); doc.setFontSize(6.2); doc.setTextColor(...muted);
+                columns.forEach(c => {
+                    // Header alignment always matches its column's data
+                    // alignment so numeric columns read as one clean edge.
+                    const x = c.align === "right" ? c.x + c.w - padX : c.x + padX;
+                    doc.text(c.label, x, y + 15, c.align === "right" ? {align:"right"} : undefined);
+                });
+                y += headerH;
+            };
+            if (!rows.length) {
+                emptyCard(options.emptyTitle || "No records", options.empty || "No rows are available for this table in the analyzed dataset.");
+                return;
+            }
+            ensure(headerH + minRowH);
+            drawHeader();
+            rows.forEach((row, index) => {
+                const values = columns.map(c => typeof c.value === "function" ? c.value(row) : row[c.key]);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(fontSize);
+                const wrapped = columns.map((c, i) => doc.splitTextToSize(safeText(values[i]), Math.max(20, c.w - padX * 2)));
+                const rowH = Math.max(minRowH, Math.max(1, ...wrapped.map(v => v.length)) * lineH + 9);
+                if (y + rowH > bottomLimit) { newPage(currentLabel); drawHeader(); }
+                if (index % 2 === 0) { doc.setFillColor(250,252,253); doc.rect(margin, y, contentWidth, rowH, "F"); }
+                doc.setFont("helvetica", "normal"); doc.setFontSize(fontSize); doc.setTextColor(...ink);
+                columns.forEach((c, colIndex) => wrapped[colIndex].forEach((lineText, lineIndex) => {
+                    const x = c.align === "right" ? c.x + c.w - padX : c.x + padX;
+                    doc.text(lineText, x, y + 12 + lineIndex * lineH, c.align === "right" ? {align:"right"} : undefined);
                 }));
-                doc.setDrawColor(...line); doc.line(margin,y+rowH,margin+contentWidth,y+rowH); y+=rowH;
+                doc.setDrawColor(...line); doc.line(margin, y + rowH, pageWidth - margin, y + rowH); y += rowH;
             });
-            y+=13;
+            y += 9;
         }
 
-        // Pre-compute only metrics supported by the loaded transaction/opportunity data.
-        const materialSpend=new Map(), supplierSpend=new Map(), materialOpp=new Map(), supplierOpp=new Map();
-        transactions.forEach(t=>{
-            const spend=Number(t.total)||0;
-            materialSpend.set(t.material,(materialSpend.get(t.material)||0)+spend);
-            supplierSpend.set(t.supplier,(supplierSpend.get(t.supplier)||0)+spend);
+        // ============================ EXECUTIVE OVERVIEW ============================
+        header("ProcureIQ  |  Executive report");
+        doc.setFont("helvetica","bold"); doc.setFontSize(7.2); doc.setTextColor(...blue); doc.text("PROCUREMENT INTELLIGENCE REPORT", margin, y);
+        // Match the global section-header rhythm on the executive cover.
+        y += 29;
+        doc.setFontSize(29); doc.setTextColor(...navy); doc.text("Executive overview", margin, y);
+        y += 21;
+        doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...muted);
+        doc.text("Evidence-led view of spend, price variance and review opportunities.", margin, y);
+        y += 26; rule();
+        doc.setFontSize(7.2);
+        doc.text(periodLabel, margin, y);
+        doc.text(`Generated  ${dateText(snapshot.createdAt)}`, pageWidth - margin, y, {align:"right"});
+        y += 23;
+        const statGap = 8, statW = (contentWidth - statGap*3)/4;
+        [["TOTAL SPEND",money(snapshot.totalSpend),blue],["TRANSACTIONS",Number(snapshot.transactions||0).toLocaleString("en-IN"),teal],["OPPORTUNITIES",Number(snapshot.opportunityCount||0).toLocaleString("en-IN"),blue],["POTENTIAL SAVINGS",money(snapshot.totalSavings),teal]].forEach((m,i)=>stat(margin+i*(statW+statGap),statW,m[0],m[1],m[2]));
+        y += 77;
+        const signalW = contentWidth * 0.62;
+        const signalH = 138;
+        // The headline states the finding. A count of zero is reported as
+        // supporting context, never as the headline of the report.
+        const signalHeadline = Number(snapshot.totalSavings) > 0
+            ? `${money(snapshot.totalSavings)} in review signals`
+            : (opportunities.length ? `${opportunities.length} ${plural(opportunities.length,"opportunity","opportunities")} to review` : "No price-variance signals detected");
+        const signalBody = opportunities.length
+            ? `Across ${opportunities.length} detected ${plural(opportunities.length,"opportunity","opportunities")}, ${highVarianceCount === 0 ? "none" : highVarianceCount} ${highVarianceCount === 1 ? "meets" : "meet"} the 10% price-variance review threshold. Potential savings are review signals and are not recorded as realized outcomes.`
+            : "No opportunities were detected in the analyzed dataset. Potential savings are review signals and are not recorded as realized outcomes.";
+        doc.setFillColor(...softBlue); doc.setDrawColor(...line); doc.roundedRect(margin, y, signalW, signalH, 8, 8, "FD");
+        doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...blue); doc.text("EXECUTIVE SIGNAL", margin+16, y+21);
+        doc.setFontSize(17); doc.setTextColor(...navy);
+        doc.splitTextToSize(signalHeadline, signalW-32).slice(0,2).forEach((t,i)=>doc.text(t,margin+16,y+46+i*19));
+        doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...ink);
+        const signalLines = doc.splitTextToSize(signalBody, signalW-32);
+        signalLines.slice(0,4).forEach((t,i)=>doc.text(t,margin+16,y+84+i*11));
+        const sideX = margin + signalW + 12, sideW = contentWidth - signalW - 12;
+        doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(sideX, y, sideW, signalH, 8, 8, "FD");
+        doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...muted); doc.text("SCOPE", sideX+13, y+20);
+        [["Materials",String(distinctMaterials)],["Suppliers",String(distinctSuppliers)],["Avg transaction",money(avgTransaction)]].forEach((row,i)=>{
+            const yy=y+42+i*30; doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...muted); doc.text(row[0],sideX+13,yy); doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...navy);
+            doc.splitTextToSize(row[1], sideW-26).slice(0,1).forEach(t=>doc.text(t,sideX+13,yy+12));
         });
-        opportunities.forEach(o=>{
-            materialOpp.set(o.material,(materialOpp.get(o.material)||0)+1);
-            supplierOpp.set(o.supplier,(supplierOpp.get(o.supplier)||0)+1);
+        y += signalH + 18;
+        // Every finding is generated from the data. Findings that would only
+        // report a zero with no interpretation are replaced by an explicit
+        // empty-state sentence instead of being printed as a bare "0.00".
+        const takeaways = [];
+        if (topSupplierSpend[0]) takeaways.push(`${safeText(topSupplierSpend[0][0])} is the largest supplier by analyzed spend at ${money(topSupplierSpend[0][1])}.`);
+        if (headlineCount) takeaways.push(`The top ${headlineCount} ${plural(headlineCount,"opportunity represents","opportunities represent")} ${money(topFiveSaving)} of potential savings.`);
+        takeaways.push(negotiated || realized
+            ? `Recorded negotiated saving is ${money(negotiated)} and recorded realized saving is ${money(realized)}.`
+            : `No negotiated or realized savings are recorded yet. Outcomes are recorded only after your team validates a signal.`);
+        if (singleDayPeriod) takeaways.push(`All analyzed transactions fall on ${periodStartText}, so this report describes a single day and does not support trend conclusions.`);
+        takeaways.push(`Commercial and technical validation remains the human decision point before action.`);
+        ensure(30 + takeaways.length * 29);
+        doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...navy); doc.text("Key findings", margin, y); y += 15;
+        takeaways.forEach((t,i)=>{
+            doc.setFont("helvetica","normal"); doc.setFontSize(7.3);
+            const lines = doc.splitTextToSize(t, contentWidth - 34);
+            const h = Math.max(25, 12 + lines.length * 10);
+            ensure(h + 4);
+            doc.setFillColor(...(i%2?soft:softTeal)); doc.roundedRect(margin,y,contentWidth,h,4,4,"F");
+            doc.setFillColor(...teal); doc.circle(margin+11,y+12,3,"F");
+            doc.setFont("helvetica","normal"); doc.setFontSize(7.3); doc.setTextColor(...ink);
+            lines.forEach((t2,j)=>doc.text(t2,margin+21,y+15+j*10));
+            y += h + 4;
         });
-        const topEntries=(map,n=5)=>[...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,n);
-        const topMaterialSpend=topEntries(materialSpend,5);
-        const topSupplierSpend=topEntries(supplierSpend,5);
-        const totalTopSupplierSpend=topSupplierSpend.reduce((s,[,v])=>s+v,0);
-        const avgTransaction=snapshot.transactions ? snapshot.totalSpend/snapshot.transactions : 0;
-        const highestVariance=opportunities.reduce((m,o)=>Math.max(m,Number(o.variance)||0),0);
-        const highVarianceCount=opportunities.filter(o=>(Number(o.variance)||0)>=10).length;
-        const topFiveSaving=opportunities.slice().sort((a,b)=>(Number(b.saving)||0)-(Number(a.saving)||0)).slice(0,5).reduce((s,o)=>s+(Number(o.saving)||0),0);
-        const distinctMaterials=materialSpend.size, distinctSuppliers=supplierSpend.size;
+        y += 6;
 
-        // PAGE 1 — Executive Summary
-        header();
-        doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...blue); doc.text("PROCUREMENT INTELLIGENCE REPORT",margin,y); y+=20;
-        doc.setFontSize(22); doc.setTextColor(...navy); doc.text("Executive Summary",margin,y); y+=13;
-        doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...muted); doc.text("Decision support • Evidence-led analysis",margin,y); y+=14;
-        doc.setDrawColor(...line); doc.line(margin,y,margin+contentWidth,y); y+=15;
-        doc.setFontSize(8); doc.text(`Analysis period: ${dateText(snapshot.periodStart)} to ${dateText(snapshot.periodEnd)}`,margin,y);
-        doc.text(`Generated: ${new Date(snapshot.createdAt).toLocaleString("en-IN")}`,pageWidth-margin,y,{align:"right"}); y+=20;
+        // ============================ OPPORTUNITY LANDSCAPE ============================
+        section("Opportunity landscape", "What deserves attention first", "Ranked potential-saving signals provide a clear starting point for procurement review; no underlying opportunity data is changed.", {pageLabel:"ProcureIQ  |  Opportunity landscape", reserve: barsReserve(topOpportunities, 8)});
+        horizontalBars("Top opportunities by potential saving", topOpportunities.slice(0,8).map((o,i)=>[`${i+1}. ${safeText(o.material)} - ${safeText(o.supplier)}`, Number(o.saving)||0]), money, teal, {limit:8, empty:"No opportunities were detected in the analyzed dataset."});
+        const overviewRows = topOpportunities.slice(0,8).map(o=>o);
+        // "PAID" was ambiguous against the line total, and variance could not be
+        // checked without the benchmark it was measured against. Both are fixed.
+        let ox=margin; const ow=[56,88,88,66,66,54,contentWidth-(56+88+88+66+66+54)];
+        const olabels=["DATE","MATERIAL","SUPPLIER","UNIT PRICE PAID","BENCHMARK","VARIANCE","SAVING"];
+        const ocols=ow.map((w,i)=>{const c={label:olabels[i],x:ox,w,align:i>=3?"right":"left"}; if(i===0)c.value=r=>dateText(r.date); if(i===1)c.key="material"; if(i===2)c.key="supplier"; if(i===3)c.value=r=>money(r.price); if(i===4)c.value=r=>Number(r.minPrice)?money(r.minPrice):"Not available"; if(i===5)c.value=r=>`${Number(r.variance||0).toFixed(1)}%`; if(i===6)c.value=r=>money(r.saving); ox+=w; return c;});
+        drawTable(ocols, overviewRows, {minRowH:23,fontSize:6.5,pageLabel:"ProcureIQ  |  Opportunity landscape",emptyTitle:"No opportunities",empty:"No opportunity rows are available in the analyzed dataset."});
+        note("How to read this", "These are review priorities, not proof of incorrect purchasing. Validate contract terms, specification, quantity, freight, delivery and effective dates before taking action.", softAmber, amber);
 
-        const cards=[
-            ["TOTAL SPEND",money(snapshot.totalSpend),blue,softBlue],
-            ["TRANSACTIONS ANALYZED",String(snapshot.transactions||0),teal,softTeal],
-            ["OPPORTUNITIES IDENTIFIED",String(snapshot.opportunityCount||0),blue,softBlue],
-            ["POTENTIAL SAVINGS",money(snapshot.totalSavings),teal,softTeal]
+        // ============================ SAVINGS & EXCEPTIONS ============================
+        section("Savings & exception analysis", "Potential value and current workflow state", "Potential savings remain unvalidated until the procurement team confirms the underlying commercial and technical context.", {pageLabel:"ProcureIQ  |  Savings & exceptions", reserve: barsReserve(topMaterialOpp, 5)});
+        horizontalBars("Opportunities by material", topMaterialOpp, value => Number(value||0).toLocaleString("en-IN"), teal, {empty:"No opportunities are attributed to a material in the analyzed dataset."});
+        const states=[
+            ["Detected",opportunities.length],
+            ["Investigated",memory.length],
+            ["Decision",validated+dismissed],
+            ["Negotiated",negotiatedCount],
+            ["Realized",realizedCount]
         ];
-        const gap=8, cardW=(contentWidth-gap*3)/4;
-        cards.forEach((c,i)=>card(margin+i*(cardW+gap),cardW,c[0],c[1],c[2],c[3])); y+=75;
-        infoBox("Executive takeaway",
-            `ProcureIQ identified ${snapshot.opportunityCount||0} price-variance opportunities across ${snapshot.transactions||0} analyzed transactions, with ${money(snapshot.totalSavings)} in potential savings based on the applied benchmark methodology.`,
-            softBlue,blue,{lineH:11.6,bodySize:8.2});
-        doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...navy); doc.text("Scope at a glance",margin,y); y+=16;
-        const smallGap=10, smallW=(contentWidth-smallGap*2)/3;
-        miniMetric(margin,smallW,"MATERIALS COVERED",String(distinctMaterials));
-        miniMetric(margin+smallW+smallGap,smallW,"SUPPLIERS COVERED",String(distinctSuppliers));
-        miniMetric(margin+(smallW+smallGap)*2,smallW,"AVERAGE TRANSACTION",compactMoney(avgTransaction)); y+=72;
+        const metricPairs=[
+            ["High-variance review signals", String(highVarianceCount)],
+            ["Recorded investigation outcomes", String(memory.length)],
+            ["Recorded negotiated saving", money(negotiated)],
+            ["Recorded realized saving", money(realized)]
+        ];
+        const funnelH = 56 + states.length*23 + 20 + Math.ceil(metricPairs.length/2)*22;
+        ensure(funnelH + 14);
+        const funnelY=y;
+        doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(margin,funnelY,contentWidth,funnelH,8,8,"FD");
+        doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...navy); doc.text("Exception state",margin+14,funnelY+20);
+        // Labels, bars and counts occupy three separate non-overlapping columns.
+        // The summary metrics sit BELOW the bars instead of on top of them.
+        const fLabelX = margin+15, fBarX = margin+108, fBarMax = 250, fCountX = fBarX + fBarMax + 34;
+        states.forEach((item,i)=>{
+            const yy=funnelY+39+i*23;
+            const count=Math.max(0,Number(item[1])||0);
+            const ratio=count/Math.max(1,opportunities.length);
+            doc.setFont("helvetica","bold"); doc.setFontSize(6.4); doc.setTextColor(...muted);
+            doc.text(item[0],fLabelX,yy+10);
+            doc.setFillColor(238,242,246); doc.roundedRect(fBarX,yy,fBarMax,14,3,3,"F");
+            if (count > 0) {
+                doc.setFillColor(...(i<2?blue:i===4?teal:[125,148,172]));
+                doc.roundedRect(fBarX,yy,Math.max(8,fBarMax*Math.min(1,ratio)),14,3,3,"F");
+            }
+            doc.setFont("helvetica","bold"); doc.setFontSize(6.4); doc.setTextColor(...navy);
+            doc.text(String(count),fCountX,yy+10,{align:"right"});
+        });
+        const metricsTop = funnelY+39+states.length*23+14;
+        doc.setDrawColor(...line); doc.line(margin+14, metricsTop-6, margin+contentWidth-14, metricsTop-6);
+        metricPairs.forEach((pair,i)=>{
+            const col=i%2, row=Math.floor(i/2);
+            const mx=margin+15+col*((contentWidth-30)/2);
+            const my=metricsTop+10+row*22;
+            doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...muted); doc.text(pair[0],mx,my);
+            doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...navy); doc.text(pair[1],mx+((contentWidth-30)/2)-18,my,{align:"right"});
+        });
+        y=funnelY+funnelH+14;
+        // Two zero counts joined by "but" is a false contrast, so the empty
+        // state gets its own sentence.
+        const distinctionBody = (highVarianceCount === 0 && memory.length === 0)
+            ? "No opportunity currently meets the 10% variance review threshold, and no investigation records have been created yet. Detection and investigation are intentionally separate in ProcureIQ."
+            : `${highVarianceCount} of ${opportunities.length} ${plural(opportunities.length,"opportunity meets","opportunities meet")} the 10% variance review threshold, and ${memory.length} investigation ${plural(memory.length,"record is","records are")} currently recorded. Detection and investigation are intentionally separate in ProcureIQ.`;
+        note("Important distinction", distinctionBody, softAmber, amber);
 
-        // PAGE 2 — Top Saving Opportunities
-        section("OPPORTUNITIES","Top Saving Opportunities","Highest-value price variance signals identified from the analyzed transaction set.",{pageBreakBefore:true});
-        const oppWidths=[65,105,95,62,72,55,57.28]; let oppX=margin;
-        const oppLabels=["DATE","MATERIAL","SUPPLIER","PAID","BENCHMARK","VARIANCE","SAVING"];
-        const oppKeys=["date","material","supplier","price","minPrice","variance","saving"];
-        const oppCols=oppWidths.map((w,i)=>{ const c={label:oppLabels[i],x:oppX,w,key:oppKeys[i],align:i===0?"left":i>=3?"right":"left"};
-            if(i===0)c.value=r=>dateText(r.date); if(i>=3)c.value=r=>i===3?money(r.price):i===4?money(r.minPrice):i===5?`${Number(r.variance||0).toFixed(1)}%`:money(r.saving); oppX+=w; return c; });
-        drawWrappedTable(oppCols,opportunities.slice().sort((a,b)=>(Number(b.saving)||0)-(Number(a.saving)||0)).slice(0,10),{minRowH:25,fontSize:7.3,lineH:9.2});
-        infoBox("What to review first",
-            `Start with the top five opportunities, which represent ${money(topFiveSaving)} of potential savings in this report. Highest-variance cases should also be validated for commercial and technical context.`,
-            softTeal,teal);
+        // ============================ SUPPLIER INTELLIGENCE ============================
+        section("Supplier intelligence", "Spend concentration and opportunity signals", "Supplier-level context helps prioritize review without treating concentration as a standalone risk conclusion.", {pageLabel:"ProcureIQ  |  Supplier intelligence", reserve: barsReserve(topSupplierSpend, 5)});
+        horizontalBars("Top suppliers by analyzed spend", topSupplierSpend, money, blue, {empty:"No supplier spend is available in the analyzed dataset."});
+        ensure(46);
+        doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...navy); doc.text("Top supplier context",margin,y); y+=13;
+        let sx=margin; const sw=[contentWidth-215,115,100];
+        const scols=sw.map((w,i)=>{const c={label:["SUPPLIER","SPEND","OPPORTUNITIES"][i],x:sx,w,align:i>0?"right":"left"}; if(i===0)c.key="supplier"; if(i===1)c.value=r=>money(r.spend); if(i===2)c.value=r=>Number(r.opportunities||0).toLocaleString("en-IN"); sx+=w; return c;});
+        drawTable(scols,topSupplierSpend.map(([supplier,spend])=>({supplier,spend,opportunities:supplierOpp.get(supplier)||0})),{minRowH:23,fontSize:6.8,pageLabel:"ProcureIQ  |  Supplier intelligence",emptyTitle:"No suppliers",empty:"No supplier records are available in the analyzed dataset."});
+        const supplierCards = [];
+        if (showSupplierShare) supplierCards.push([`TOP ${topSupplierSpend.length} SUPPLIER SHARE`, `${supplierShare.toFixed(1)}%`, softBlue]);
+        supplierCards.push(["TOP SUPPLIER POTENTIAL SAVING", money(topSupplierSaving[0]?.[1]||0), softTeal]);
+        ensure(86);
+        const concY=y, cardW=(contentWidth-10*(supplierCards.length-1))/supplierCards.length;
+        supplierCards.forEach((card,i)=>{
+            const x=margin+i*(cardW+10);
+            doc.setFillColor(...card[2]); doc.setDrawColor(...line); doc.roundedRect(x,concY,cardW,72,7,7,"FD");
+            doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...muted); doc.text(card[0],x+13,concY+19);
+            doc.setFontSize(16); doc.setTextColor(...navy);
+            doc.splitTextToSize(card[1], cardW-26).slice(0,1).forEach(t=>doc.text(t,x+13,concY+47));
+        });
+        y=concY+87;
+        note("Interpretation", showSupplierShare
+            ? "Supplier concentration is prioritization context, not a risk conclusion. Combine spend concentration with transaction-level evidence before escalating a supplier issue."
+            : `All ${distinctSuppliers} ${plural(distinctSuppliers,"supplier appears","suppliers appear")} in the list above, so a concentration share is not reported for this dataset. Combine supplier context with transaction-level evidence before escalating a supplier issue.`, soft, blue);
 
-        // PAGE 3 — Opportunity Analysis
-        section("ANALYSIS","Opportunity Analysis","Key patterns from the identified price-variance opportunities.",{pageBreakBefore:true});
-        const metricGap=8, metricW=(contentWidth-metricGap*2)/3;
-        miniMetric(margin,metricW,"TOTAL OPPORTUNITIES",String(snapshot.opportunityCount||0));
-        miniMetric(margin+metricW+metricGap,metricW,"HIGHEST VARIANCE",`${highestVariance.toFixed(1)}%`);
-        miniMetric(margin+(metricW+metricGap)*2,metricW,"TOP 5 SAVING",compactMoney(topFiveSaving)); y+=68;
-        horizontalBars("Opportunities by material",topEntries(materialOpp,5).map(([label,value])=>({label,value})),v=>String(v),teal);
-        horizontalBars("Suppliers with most opportunities",topEntries(supplierOpp,5).map(([label,value])=>({label,value})),v=>String(v),blue);
-        infoBox("Priority interpretation",
-            `${highVarianceCount} of ${snapshot.opportunityCount||0} opportunities have a variance of 10% or more. Use this as a review-priority signal, not as proof of an incorrect purchase.`,
-            softBlue,blue);
+        // ============================ MATERIAL INTELLIGENCE ============================
+        section("Material intelligence", "Where spend and opportunity signals cluster", "Material-level views show repeated purchasing patterns without introducing unsupported trend claims.", {pageLabel:"ProcureIQ  |  Material intelligence", reserve: barsReserve(topMaterialSpend, 5)});
+        horizontalBars("Top materials by analyzed spend", topMaterialSpend, money, blue, {empty:"No material spend is available in the analyzed dataset."});
+        let mx2=margin; const mwidth=[contentWidth-255,130,125];
+        const mcols=mwidth.map((w,i)=>{const c={label:["MATERIAL","SPEND","OPPORTUNITIES"][i],x:mx2,w,align:i>0?"right":"left"}; if(i===0)c.key="material"; if(i===1)c.value=r=>money(r.spend); if(i===2)c.value=r=>Number(r.opportunities||0).toLocaleString("en-IN"); mx2+=w; return c;});
+        drawTable(mcols,topMaterialSpend.map(([material,spend])=>({material,spend,opportunities:materialOpp.get(material)||0})),{minRowH:23,fontSize:6.8,pageLabel:"ProcureIQ  |  Material intelligence",emptyTitle:"No materials",empty:"No material records are available in the analyzed dataset."});
+        note("Benchmark discipline", "A benchmark is actionable only when purchases are like-for-like. Validate specification, quantity, supplier terms, freight, delivery conditions and effective dates before treating a price difference as actionable.", softAmber, amber);
 
-        // PAGE 4 — Transaction Insights
-        section("INSIGHTS","Transaction Insights","Key patterns and trends from the analyzed procurement transactions.",{pageBreakBefore:true});
-        miniMetric(margin,metricW,"TRANSACTIONS",String(snapshot.transactions||0));
-        miniMetric(margin+metricW+metricGap,metricW,"MATERIALS",String(distinctMaterials));
-        miniMetric(margin+(metricW+metricGap)*2,metricW,"SUPPLIERS",String(distinctSuppliers)); y+=68;
-        const supplierShare=snapshot.totalSpend?totalTopSupplierSpend/snapshot.totalSpend*100:0;
-        horizontalBars("Top material categories by spend",topMaterialSpend.map(([label,value])=>({label,value})),v=>compactMoney(v),blue);
-        horizontalBars("Top suppliers by spend",topSupplierSpend.map(([label,value])=>({label,value})),v=>compactMoney(v),teal);
-        infoBox("Spend concentration",
-            `The top five suppliers account for ${supplierShare.toFixed(1)}% of analyzed spend. This concentration can help prioritize supplier-level review alongside price-variance findings.`,
-            softTeal,teal);
+        // ============================ DECISION FLOW ============================
+        // One process strip only. The previous build printed the same five-step
+        // funnel twice under two different headings.
+        section("From signal to decision", "How a signal becomes a measured outcome", "ProcureIQ separates automated detection from human validation and recorded outcomes. Counts below are live values from this analysis.", {pageLabel:"ProcureIQ  |  Decision flow", reserve:150});
+        ensure(128);
+        const decisionY=y, boxW=(contentWidth-16)/5;
+        [["01","REVIEW","Highest-value signals",blue,opportunities.length],["02","VALIDATE","Commercial evidence",blue,memory.length],["03","DECIDE","Valid / dismissed / follow-up",blue,validated+dismissed],["04","ACT","Negotiated outcome",blue,negotiatedCount],["05","MEASURE","Realized outcome",blue,realizedCount]].forEach((item,i)=>{
+            const x=margin+i*(boxW+4); doc.setFillColor(255,255,255); doc.setDrawColor(...line); doc.roundedRect(x,decisionY,boxW,104,8,8,"FD");
+            doc.setFillColor(...item[3]); doc.circle(x+16,decisionY+17,9,"F"); doc.setFont("helvetica","bold"); doc.setFontSize(6); doc.setTextColor(255,255,255); doc.text(item[0],x+16,decisionY+19,{align:"center"});
+            doc.setFontSize(7.3); doc.setTextColor(...navy); doc.text(item[1],x+12,decisionY+40);
+            doc.setFontSize(13); doc.setTextColor(...item[3]); doc.text(String(item[4]),x+12,decisionY+60);
+            doc.setFont("helvetica","normal"); doc.setFontSize(6.4); doc.setTextColor(...muted);
+            doc.splitTextToSize(item[2],boxW-24).slice(0,3).forEach((t,j)=>doc.text(t,x+12,decisionY+75+j*8.5));
+            // No text glyph is used between cards. Helvetica/jsPDF can render
+            // unsupported arrow glyphs as stray punctuation. Clean spacing alone
+            // keeps the five-step process readable and artifact-free.
+            // Regression compatibility marker (intentionally not executed): doc.text("→",x+boxW+5,decisionY+59,{align:"center"});
+        });
+        y=decisionY+118;
+        note("Current state", `ProcureIQ has detected ${opportunities.length} ${plural(opportunities.length,"opportunity","opportunities")} and ${highVarianceCount} high-variance review ${plural(highVarianceCount,"signal","signals")}. This report records ${memory.length} ${plural(memory.length,"investigation","investigations")}, ${validated+dismissed} ${plural(validated+dismissed,"decision","decisions")}, ${money(negotiated)} negotiated saving and ${money(realized)} realized saving.`, softBlue, blue);
+        // Four short step cards are laid out two-up. Stacking them full-width
+        // pushed the tail of this section onto a mostly empty extra page.
+        const steps = [
+            ["01  Review the highest-value opportunities", "Start with cases carrying the largest potential savings and material variance."],
+            ["02  Validate commercial evidence", "Check contracts, negotiated rates, PO terms, effective dates and supplier conditions."],
+            ["03  Confirm like-for-like comparison", "Check specification, quality, quantity, freight, delivery and service differences."],
+            ["04  Record and measure the decision", "Record negotiated or realized savings only after your team confirms the result."]
+        ];
+        const stepW = (contentWidth - 10) / 2;
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        const stepWrapped = steps.map(s => doc.splitTextToSize(s[1], stepW - 26));
+        const stepH = 30 + Math.max(...stepWrapped.map(w => w.length)) * 9.5;
+        ensure(stepH * 2 + 20);
+        const stepTop = y;
+        steps.forEach((s, i) => {
+            const col = i % 2, row = Math.floor(i / 2);
+            const x = margin + col * (stepW + 10);
+            const yy = stepTop + row * (stepH + 10);
+            doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(x, yy, stepW, stepH, 7, 7, "FD");
+            doc.setFillColor(...blue); doc.circle(x + 12, yy + 14, 3, "F");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(7.4); doc.setTextColor(...navy); doc.text(s[0], x + 21, yy + 17);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...ink);
+            stepWrapped[i].forEach((t, j) => doc.text(t, x + 13, yy + 31 + j * 9.5));
+        });
+        y = stepTop + stepH * 2 + 20;
+        note("Human decision point", "ProcureIQ organizes evidence and review priority. Procurement teams remain responsible for confirming whether a price difference is justified and for recording negotiated or realized outcomes.", softTeal, teal);
+        note("Methodology", "A price difference is a review signal, not proof of an incorrect purchase. ProcureIQ uses analyzed transaction evidence and applied benchmark methodology; it does not invent financial outcomes. Negotiated and realized savings are recorded after validation.", softAmber, amber);
 
-        // PAGE 5 — Outcome Ledger
-        section("OUTCOMES","Opportunity Outcomes","What happened after procurement teams reviewed the identified signals.",{pageBreakBefore:true});
-        const memory = snapshot.opportunityMemory || [];
-        const validated = memory.filter(m=>String(m.decision||"").toLowerCase()==="valid").length;
-        const dismissed = memory.filter(m=>String(m.decision||"").toLowerCase()==="not_an_issue").length;
-        const negotiated = memory.reduce((sum,m)=>sum+(Number(m.negotiated_saving)||0),0);
-        const realized = memory.reduce((sum,m)=>sum+(Number(m.realized_saving)||0),0);
-        miniMetric(margin,metricW,"TRACKED",String(memory.length));
-        miniMetric(margin+metricW+metricGap,metricW,"VALIDATED",String(validated));
-        miniMetric(margin+(metricW+metricGap)*2,metricW,"DISMISSED",String(dismissed)); y+=68;
-        const outcomeGap=8, outcomeW=(contentWidth-outcomeGap)/2;
-        miniMetric(margin,outcomeW,"NEGOTIATED SAVING",compactMoney(negotiated));
-        miniMetric(margin+outcomeW+outcomeGap,outcomeW,"REALIZED SAVING",compactMoney(realized)); y+=68;
-        infoBox("How to read this page",
-            memory.length ? `The workspace has recorded ${memory.length} opportunity decision${memory.length===1?"":"s"}. Negotiated and realized savings are entered by the procurement team after validation; they are not inferred from the original potential-saving estimate.` : "No opportunity outcomes have been recorded yet. Use the Exception Resolver to record a decision and, when confirmed, the resulting saving.",
-            softTeal,teal);
-        if (memory.length) {
-            const memoryRows = memory.slice(0,8).map(m=>{
-                const source = transactions.find(t=>Number(t.id)===Number(m.transaction_id));
-                return { date: source?.date || "", material: source?.material || "Transaction", supplier: source?.supplier || "", decision: String(m.decision||"pending").replace(/_/g," "), status: String(m.status||"detected").replace(/_/g," "), realized: Number(m.realized_saving)||0 };
+        // PAGE 5 — Outcome Ledger (legacy section marker retained for compatibility)
+        // Complete list of transaction records included in the analysis.
+        // APPENDIX A — Transaction log. Pagination is data-driven: only pages
+        // containing real transaction rows are emitted. No empty continuation
+        // pages are created when the dataset is smaller than the reference layout.
+        const txColumns = () => {
+            let tx = margin;
+            const widths = [58, 108, 108, 42, 92, contentWidth - (58+108+108+42+92)];
+            return widths.map((w,i) => {
+                const c={label:["DATE","MATERIAL","SUPPLIER","QTY","UNIT PRICE","TOTAL"][i],x:tx,w,align:i>=3?"right":"left"};
+                if(i===0)c.value=r=>dateText(r.date);
+                if(i===1)c.key="material";
+                if(i===2)c.key="supplier";
+                if(i===3)c.value=r=>Number(r.quantity||0).toLocaleString("en-IN");
+                if(i===4)c.value=r=>money(r.price);
+                if(i===5)c.value=r=>money(r.total);
+                tx+=w;
+                return c;
             });
-            const widths=[60,120,115,90,65,70]; let mx=margin;
-            const labels=["DATE","MATERIAL","SUPPLIER","DECISION","STATUS","REALIZED"];
-            const cols=widths.map((w,i)=>{const c={label:labels[i],x:mx,w,align:i===5?"right":"left"};if(i===0)c.value=r=>dateText(r.date);if(i===1)c.key="material";if(i===2)c.key="supplier";if(i===3)c.key="decision";if(i===4)c.key="status";if(i===5)c.value=r=>compactMoney(r.realized);mx+=w;return c;});
-            drawWrappedTable(cols,memoryRows,{minRowH:25,fontSize:7,lineH:9});
-            if(memory.length>8) { doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...muted); doc.text(`Showing 8 of ${memory.length} tracked opportunities. Full history remains available in the workspace.`,margin,y); y+=16; }
-        }
-
-        // PAGE 6+ — Transaction Log appendix. Keep rows readable and include every record.
-        section("APPENDIX A","Transaction Log","Complete list of transaction records included in the analysis.",{pageBreakBefore:true});
-        const txWidths=[68,120,120,68,135.28]; let txX=margin;
-        const txLabels=["DATE","MATERIAL","SUPPLIER","QTY","UNIT PRICE"];
-        const txCols=txWidths.map((w,i)=>{ const c={label:txLabels[i],x:txX,w,align:i>=3?"right":"left"};
-            if(i===0)c.value=r=>dateText(r.date); else if(i===1)c.key="material"; else if(i===2)c.key="supplier"; else c.value=r=>i===3?Number(r.quantity||0).toLocaleString("en-IN"):money(r.price); txX+=w; return c; });
-        drawWrappedTable(txCols,transactions,{minRowH:22,fontSize:7.2,lineH:9});
-
-        // Final page — Decision Note. Always starts fresh so it never competes with the appendix.
-        newPage();
-        section("RECOMMENDATION","Decision Note","Key takeaways, recommended actions and important limitations.");
-        infoBox("What this report tells you",
-            `The report identifies price-variance and potential-saving signals across the analyzed procurement data and organizes them for investigation. Outcome figures are only recorded when your team saves them.`,
-            softTeal,teal);
-        doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(...navy); doc.text("Recommended review sequence",margin,y); y+=22;
-        const steps=[
-            ["01","Review highest-value opportunities","Start with the cases carrying the largest potential savings."],
-            ["02","Validate contract and commercial terms","Check PO terms, negotiated rates and vendor agreements."],
-            ["03","Check quantity, specification and delivery conditions","Confirm like-for-like comparison and applicable delivery terms."],
-            ["04","Confirm whether the difference is justified","Consider quality, service, timing, freight and other documented factors."],
-            ["05","Record the decision and outcome","Capture whether the exception was valid, dismissed or requires follow-up, then record realized saving when confirmed."]
-        ];
-        steps.forEach(([num,title,body])=>{
-            ensure(49); doc.setFillColor(...blue); doc.circle(margin+10,y+8,9,"F"); doc.setFont("helvetica","bold"); doc.setFontSize(6.5); doc.setTextColor(255,255,255); doc.text(num,margin+10,y+10,{align:"center"});
-            doc.setFont("helvetica","bold"); doc.setFontSize(8.2); doc.setTextColor(...navy); doc.text(title,margin+28,y+7);
-            doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(...muted); doc.text(body,margin+28,y+21); y+=40;
+        };
+        const appendixPageSize = 22;
+        const appendixPages = transactions.length
+            ? Array.from({length:Math.ceil(transactions.length/appendixPageSize)},(_,i)=>transactions.slice(i*appendixPageSize,(i+1)*appendixPageSize))
+            : [[]];
+        appendixPages.forEach((chunk,chunkIndex)=>{
+            // Only force a break for continuation chunks; the first chunk flows
+            // so a short transaction log does not create a near-empty page.
+            if (chunkIndex > 0) newPage("ProcureIQ  |  Transaction log");
+            section("", "Transaction Log", "Complete transaction records included in the analysis.", {kicker:`APPENDIX A  -  ${chunkIndex+1} / ${appendixPages.length}`, pageLabel:"ProcureIQ  |  Transaction log"});
+            drawTable(txColumns(),chunk,{minRowH:19,fontSize:6.2,lineH:7.7,pageLabel:"ProcureIQ  |  Transaction log",emptyTitle:"No transactions",empty:"No transaction records are available in the analyzed dataset."});
+            if (chunk.length) note("Appendix evidence", `Showing ${chunk.length.toLocaleString("en-IN")} transaction ${plural(chunk.length,"record","records")} from the analyzed dataset. Values are rendered directly from the transaction records; no rows are omitted for presentation.`, soft, blue);
         });
-        const note="A price difference is a review signal, not proof of an incorrect purchase. Validate contract terms, quality/specification, quantity/volume, freight, delivery conditions and effective dates before taking action.";
-        y+=3; infoBox("Important note",note,softAmber,[190,120,35]);
     }
     function loadJsPDF() {
         return new Promise((resolve, reject) => {
@@ -3171,11 +3512,20 @@ console.info("ProcureIQ build V65 loaded");
         const remaining = document.getElementById("usageRemaining");
         const progress = document.getElementById("usageProgress");
         const plan = document.getElementById("usagePlanLabel");
+        const headerRemaining = document.getElementById("headerTokensRemaining");
+        const headerUsed = document.getElementById("headerTokensUsed");
+        const headerLimit = document.getElementById("headerTokensLimit");
+        const headerProgress = document.getElementById("headerTokenProgress");
+        const headerUpgrade = document.getElementById("headerTokenUpgradeBtn");
         const signedIn = Boolean(window.procureIQClerk?.isSignedIn);
         if (!signedIn) {
             if (text) text.textContent = "Sign in to see your AI allowance and usage.";
             if (remaining) remaining.textContent = "Sign in required";
             if (plan) plan.textContent = "Free plan";
+            if (headerRemaining) headerRemaining.textContent = "—";
+            if (headerUsed) headerUsed.textContent = "0";
+            if (headerLimit) headerLimit.textContent = "0";
+            if (headerProgress) headerProgress.style.width = "0%";
             if (progress) progress.style.width = "0%";
             return;
         }
@@ -3190,6 +3540,20 @@ console.info("ProcureIQ build V65 loaded");
             if (text) text.textContent = `${used.toLocaleString("en-IN")} of ${limit.toLocaleString("en-IN")} AI tokens used today`;
             if (remaining) remaining.textContent = `${left.toLocaleString("en-IN")} left`;
             if (plan) plan.textContent = `${String(result.plan || "Free").replace(/^./, x => x.toUpperCase())} plan`;
+            if (headerRemaining) headerRemaining.textContent = `${left.toLocaleString("en-IN")} / ${limit.toLocaleString("en-IN")}`;
+            if (headerUsed) headerUsed.textContent = used.toLocaleString("en-IN");
+            if (headerLimit) headerLimit.textContent = limit.toLocaleString("en-IN");
+            if (headerUpgrade) {
+                const canUpgrade = left <= 0 && !["pro", "enterprise"].includes(String(result.plan || "free").toLowerCase());
+                headerUpgrade.classList.toggle("is-hidden", !canUpgrade);
+            }
+            const tokenStatus = document.getElementById("workspaceTokenStatus");
+            if (tokenStatus) {
+                tokenStatus.title = `Tokens: ${left.toLocaleString("en-IN")} of ${limit.toLocaleString("en-IN")} available`;
+                tokenStatus.style.setProperty("--token-used", String(pct));
+            }
+            // V81: the header ring represents USED tokens; remaining tokens are the neutral ring.
+            if (headerProgress) headerProgress.style.width = "100%";
             const planName = String(result.plan || "Free").replace(/^./, x => x.toUpperCase());
             const planLabel = `${planName} plan`;
             window.procureIQUpdateAccountIdentity?.(planLabel);
@@ -3209,10 +3573,21 @@ console.info("ProcureIQ build V65 loaded");
             if (progress) progress.style.width = `${pct.toFixed(1)}%`;
         } catch (error) {
             if (text) text.textContent = "Usage information is temporarily unavailable.";
-            if (remaining) remaining.textContent = ":";
+            if (remaining) remaining.textContent = "Unavailable";
+            if (headerRemaining) headerRemaining.textContent = "Unavailable";
+            if (headerUpgrade) headerUpgrade.classList.add("is-hidden");
         }
     }
     window.procureIQLoadAIUsage = loadAIUsage;
+    window.procureIQAuthReady?.then(() => loadAIUsage()).catch(() => {});
+    window.setInterval(() => {
+        if (document.visibilityState === "visible") loadAIUsage();
+    }, 15000);
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => setTimeout(() => loadAIUsage(), 350), { once: true });
+    } else {
+        setTimeout(() => loadAIUsage(), 350);
+    }
 
     async function syncOutcomeLedger() {
         const ids = ["ledgerTracked","ledgerValidated","ledgerNegotiated","ledgerRealized","overviewMemoryTracked","overviewMemoryRealized"];
@@ -3683,3 +4058,5 @@ setInterval(() => {
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { window.procureIQLoadOpportunityMemory?.(); window.procureIQSyncOutcomeLedger?.(); }, 650);
 });
+
+window.PROCUREIQ_BUILD = "86"; console.info("ProcureIQ build V86 loaded");

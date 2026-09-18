@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v=86">
 </head>
 <body>
 <div class="p27-site" id="top">
@@ -20,7 +20,6 @@
     <nav class="p27-nav-links" aria-label="Main navigation">
       <a href="#platform">Platform</a>
       <a href="#how">How it works</a>
-      <a href="#demo">Demo</a>
       <a href="#contactSection">Contact</a>
       <button class="p27-nav-ghost" data-auth-sign-in id="navSignInBtn" type="button">Sign in</button>
       <button class="p27-nav-primary" data-auth-open="platform" id="navEnterBtn" type="button">Open workspace <span>→</span></button>
@@ -48,20 +47,37 @@
       </div>
     </section>
 
-    <section class="p27-demo" id="demo">
-      <div class="p27-section-head compact">
-        <div><span class="p27-eyebrow dark">PRODUCT DEMO</span><h2>See ProcureIQ in action.</h2></div>
-        <p>Use this space for the ProcureIQ advertisement or product video.</p>
+    <section class="p27-product-preview" id="decisionLoop" aria-labelledby="productPreviewTitle">
+      <div class="p27-preview-copy">
+        <span class="p27-eyebrow dark">SEE THE PRODUCT</span>
+        <h2 id="productPreviewTitle">Turn a purchasing signal into a reviewable decision.</h2>
+        <p>ProcureIQ brings the exception, financial impact and supporting evidence into one focused workspace.</p>
+        <div class="p27-preview-points">
+          <div><span>01</span><strong>Detect the signal</strong><small>Surface unusual purchasing patterns.</small></div>
+          <div><span>02</span><strong>Inspect the evidence</strong><small>See the values behind the exception.</small></div>
+          <div><span>03</span><strong>Record the outcome</strong><small>Keep the decision connected to the opportunity.</small></div>
+        </div>
       </div>
-      <div class="p27-video-shell">
-        <video class="p27-video" controls playsinline preload="metadata" poster="/logo.svg">
-          <source src="/procureiq-ad.mp4" type="video/mp4">
-          Your browser does not support video playback.
-        </video>
-        <div class="p27-video-placeholder">
-          <span>PROCUREIQ</span>
-          <strong>Your advertisement video goes here</strong>
-          <small>Add <code>public/procureiq-ad.mp4</code> to replace this placeholder.</small>
+      <div class="p27-product-window" aria-label="Illustrative ProcureIQ product preview">
+        <div class="p27-window-bar"><div><span></span><span></span><span></span></div><small>ProcureIQ · Opportunity review</small><b>ILLUSTRATIVE WORKFLOW</b></div>
+        <div class="p27-window-body">
+          <div class="p27-window-list">
+            <div class="p27-window-list-head"><span>OPPORTUNITIES</span><span>STATUS</span></div>
+            <div class="p27-op-row active"><div><strong>Price variance</strong><small>Material · Supplier</small></div><em>Review</em></div>
+            <div class="p27-op-row"><div><strong>Contract leakage</strong><small>Terms · Rebate</small></div><em>Review</em></div>
+            <div class="p27-op-row"><div><strong>Invoice exception</strong><small>PO · GRN · Invoice</small></div><em>Review</em></div>
+          </div>
+          <div class="p27-window-detail">
+            <div class="p27-detail-head"><div><span>OPPORTUNITY</span><h3>Price variance</h3></div><strong>HIGH</strong></div>
+            <div class="p27-evidence-grid">
+              <div><small>CURRENT PRICE</small><strong>Review value</strong></div>
+              <div><small>BENCHMARK</small><strong>Compare value</strong></div>
+              <div><small>VARIANCE</small><strong>Investigate</strong></div>
+              <div><small>IMPACT</small><strong>Quantified</strong></div>
+            </div>
+            <div class="p27-evidence-chain"><span>Evidence</span><div><b>Purchase data</b><i>→</i><b>Comparison</b><i>→</i><b>Decision</b></div></div>
+            <div class="p27-detail-footer"><span>AI recommends · evidence supports · human decides</span><button type="button" aria-label="Illustrative investigate action">Investigate</button></div>
+          </div>
         </div>
       </div>
     </section>
@@ -77,8 +93,17 @@
     </section>
 
     <section class="p27-workflow" id="how">
-      <div class="p27-workflow-copy"><span class="p27-eyebrow dark">HOW IT WORKS</span><h2>Find → investigate → act → measure.</h2><p>Upload purchasing evidence, inspect the evidence, record the decision and measure what happened next.</p></div>
-      <div class="p27-steps"><div><b>01</b><span>Ingest</span><small>Contracts and purchasing data.</small></div><div><b>02</b><span>Validate</span><small>Terms, quantities and prices.</small></div><div><b>03</b><span>Decide</span><small>Record what your team found.</small></div><div><b>04</b><span>Measure</span><small>Capture the outcome.</small></div></div>
+      <div class="p27-workflow-copy">
+        <span class="p27-eyebrow dark">THE PROCUREIQ DECISION LOOP</span>
+        <h2>Find → investigate → act → measure.</h2>
+        <p>ProcureIQ keeps the workflow connected: surface an exception, inspect its evidence, let the team decide what to do, then record the outcome.</p>
+      </div>
+      <div class="p27-steps">
+        <article><b>01</b><span>Find</span><small>Surface price variance and other procurement exceptions from uploaded purchasing evidence.</small><em>Exception queue</em></article>
+        <article><b>02</b><span>Investigate</span><small>Open the source transaction and compare the values behind the signal before taking action.</small><em>Evidence review</em></article>
+        <article><b>03</b><span>Act</span><small>Record the human decision — validate, dismiss, investigate further or take commercial action.</small><em>Human decision</em></article>
+        <article><b>04</b><span>Measure</span><small>Track what happened next and connect the opportunity to its recorded outcome.</small><em>Outcome memory</em></article>
+      </div>
     </section>
 
     <section class="p27-contact" id="contactSection">
@@ -86,23 +111,9 @@
       <form class="p27-form" id="inquiryForm"><label>Name<input name="name" placeholder="Your name" required></label><label>Work email<input name="email" type="email" placeholder="you@company.com" required></label><label>Message<textarea name="message" rows="4" placeholder="What would you like to explore?" required></textarea></label><button class="p27-button p27-button-primary" type="submit">Send inquiry <span>→</span></button><p id="inquiryStatus" role="status"></p></form>
     </section>
   </main>
-<script>
-  (() => {
-    const video = document.querySelector('.p27-video');
-    const placeholder = document.querySelector('.p27-video-placeholder');
-    if (!video || !placeholder) return;
-    const showVideo = () => { video.style.opacity = '1'; placeholder.style.display = 'none'; };
-    const showPlaceholder = () => { video.style.opacity = '0'; placeholder.style.display = 'flex'; };
-    video.style.opacity = '0';
-    video.addEventListener('loadeddata', showVideo, { once: true });
-    video.addEventListener('error', showPlaceholder);
-    if (video.readyState >= 2) showVideo();
-  })();
-</script>
-
-  <footer class="p27-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><div><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#demo">Demo</a><a href="#contactSection">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© 2026 ProcureIQ</span></div></footer>
+  <footer class="p27-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><div><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#contactSection">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© 2026 ProcureIQ</span></div></footer>
 </div>
-<script src="/auth.js?v=50"></script>
-<script src="/script.js?v=50"></script>
+<script src="/auth.js?v=86"></script>
+<script src="/script.js?v=86"></script>
 </body>
 </html>

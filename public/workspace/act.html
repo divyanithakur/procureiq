@@ -8,21 +8,58 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="/style.css" rel="stylesheet"/>
+<link href="/style.css?v=86" rel="stylesheet"/>
 <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
 <link rel="alternate icon" href="/logo-mark.svg">
-</head><link href="/workspace.css?v=65" rel="stylesheet"/><body><div class="app-shell" id="appShell"><header class="app-header">
-<a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
-<img alt="ProcureIQ" class="app-logo" src="/logo.svg"/>
-</a>
-<div class="workspace-context"><span class="workspace-context-dot"></span><span>Procurement intelligence workspace</span></div>
-<button class="back-btn" id="backToWelcomeBtn" type="button">← Home</button>
+<link href="/workspace.css?v=86" rel="stylesheet"/><meta name="procureiq-header-build" content="V86"/><body><div class="app-shell" id="appShell"><header class="app-header">
+  <a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
+    <img alt="ProcureIQ" class="app-logo" src="/logo.svg"/>
+  </a>
+  <div class="workspace-context">
+    <span class="workspace-context-dot"></span>
+    <span>Procurement intelligence workspace</span>
+  </div>
+  <div class="workspace-header-nav" aria-label="Workspace header">
+    <div class="workspace-token-status" id="workspaceTokenStatus" aria-label="AI token usage" title="AI tokens used, remaining and plan limit today">
+      <div class="token-status-head">
+        <span class="header-token-label">Tokens</span>
+        <strong id="headerTokensRemaining">—</strong>
+        <small>remaining</small>
+        <button class="header-token-upgrade is-hidden" id="headerTokenUpgradeBtn" type="button">Upgrade</button>
+      </div>
+      <div class="token-status-track" aria-hidden="true"><span id="headerTokenProgress"></span></div>
+      <div class="token-status-meta">
+        <span>Used <b id="headerTokensUsed">0</b></span>
+        <span>Limit <b id="headerTokensLimit">0</b></span>
+      </div>
+    </div>
+
+    <button class="back-btn workspace-home-btn" id="backToWelcomeBtn" type="button">← Home</button>
+</div>
 </header><aside aria-label="ProcureIQ workspace navigation" class="app-sidebar"><div class="sidebar-account-block">
-<button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
-<span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span><span class="dashboard-account-copy"><strong id="dashboardAccountName">Account</strong><small>Workspace account</small></span><span class="dashboard-account-chevron">⌄</span>
-</button>
-<div class="account-menu is-hidden" id="accountMenu"><div class="account-menu-profile account-menu-profile-clean"><div><strong id="accountMenuName">My account</strong><span id="accountMenuEmail">Signed-in workspace</span></div></div><div class="account-menu-divider"></div><button id="accountProfileBtn" type="button">Profile</button><button id="accountSettingsBtn" type="button">Settings</button><div class="account-menu-divider"></div><button class="account-signout" id="accountSignOutBtn" type="button">Log out</button></div>
+  <button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
+    <span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span>
+    <span class="dashboard-account-copy">
+      <strong id="dashboardAccountName">Account</strong>
+      <span class="account-plan-row"><small id="dashboardAccountPlan">Free plan</small><span class="sidebar-upgrade" id="sidebarUpgradeBtn" role="button" tabindex="0">Upgrade</span></span>
+    </span>
+    <span class="dashboard-account-chevron">⌄</span>
+  </button>
+  <div class="account-menu is-hidden" id="accountMenu">
+    <div class="account-menu-profile account-menu-profile-clean">
+      <div>
+        <strong id="accountMenuName">My account</strong>
+        <span id="accountMenuEmail">Signed-in workspace</span>
+        <span class="account-menu-plan" id="accountMenuPlan">Free plan</span>
+      </div>
+    </div>
+    <div class="account-menu-divider"></div>
+    <button id="accountProfileBtn" type="button">Profile</button>
+    <button id="accountSettingsBtn" type="button">Settings</button>
+    <div class="account-menu-divider"></div>
+    <button class="account-signout" id="accountSignOutBtn" type="button">Log out</button>
+  </div>
 </div>
 <div class="sidebar-brand-caption">Procurement intelligence</div><div class="sidebar-label">WORKSPACE</div>
 <nav aria-label="Primary workspace" class="sidebar-nav">
@@ -73,5 +110,5 @@
     <div class="result-empty"><span class="section-kicker">MATCH RESULT</span><h2>Enter the three-way match values.</h2><p>ProcureIQ will show the exact variance, financial exposure and recommended next action.</p></div>
   </section>
 </section>
-<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="overview" href="/workspace/overview">Overview</a><a data-page="act" href="/workspace/act">Exception Resolver</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer></main></div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js?v=65"></script><script src="/script.js?v=65"></script><script>window.PROCUREIQ_PAGE="act";</script><script src="/core-features.js?v=65"></script><script>document.addEventListener("DOMContentLoaded",function(){const f=document.querySelector(".dashboard-footer");if(f&&!f.querySelector("[data-legal-links]")){const d=document.createElement("span");d.dataset.legalLinks="";d.innerHTML='<a href="/privacy">Privacy Policy</a><a href="/terms">Terms & Conditions</a><a href="/refund-cancellation">Refunds & Cancellation</a>';f.appendChild(d);}});</script>
-<script>window.PROCUREIQ_BUILD="64";</script></body></html>
+<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="overview" href="/workspace/overview">Overview</a><a data-page="act" href="/workspace/act">Exception Resolver</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer></main></div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js?v=86"></script><script src="/script.js?v=86"></script><script>window.PROCUREIQ_PAGE="act";</script><script src="/core-features.js?v=86"></script><script>document.addEventListener("DOMContentLoaded",function(){const f=document.querySelector(".dashboard-footer");if(f&&!f.querySelector("[data-legal-links]")){const d=document.createElement("span");d.dataset.legalLinks="";d.innerHTML='<a href="/privacy">Privacy Policy</a><a href="/terms">Terms & Conditions</a><a href="/refund-cancellation">Refunds & Cancellation</a>';f.appendChild(d);}});</script>
+<script>window.PROCUREIQ_BUILD="71";</script></body></html>
