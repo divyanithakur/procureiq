@@ -532,15 +532,17 @@ app.post("/api/create-subscription", async (req, res) => {
       headers: { Authorization: `Basic ${credentials}` }
     });
     const remotePlan = await remotePlanResponse.json().catch(() => ({}));
+    console.info("Razorpay plan check", { planKey, currency, planIdPresent: Boolean(planId), razorpayStatus: remotePlanResponse.status, razorpayPlanId: remotePlan?.id || planId, razorpayCurrency: remotePlan?.item?.currency || null, razorpayAmount: remotePlan?.item?.amount || null, razorpayPeriod: remotePlan?.period || null });
     const remoteAmount = Number(remotePlan?.item?.amount);
     const expectedAmount = Number(plan.amount);
     const remotePeriod = String(remotePlan?.period || "").toLowerCase();
+    const remoteCurrency = String(remotePlan?.item?.currency || "").toUpperCase();
     if (!remotePlanResponse.ok || remotePlan?.id !== planId) {
       return res.status(502).json({ error: `The configured Razorpay ${currency} ${plan.name} plan could not be verified. Check the matching RAZORPAY_PLAN_*_ID.` });
     }
-    if (remoteAmount !== expectedAmount || remotePeriod !== "monthly") {
+    if (remoteCurrency !== plan.currency || remoteAmount !== expectedAmount || remotePeriod !== "monthly") {
       return res.status(409).json({
-        error: `Razorpay plan mismatch for ${plan.name}. ProcureIQ expects ${plan.currency} ${Number(expectedAmount / 100).toLocaleString("en-IN")} monthly, but the configured Razorpay plan is ${Number(remoteAmount / 100 || 0).toLocaleString("en-IN")} ${String(remotePlan?.period || "")} . Update the matching RAZORPAY_PLAN_*_ID in the environment.`
+        error: `Razorpay plan mismatch for ${plan.name}. ProcureIQ expects ${plan.currency} ${Number(expectedAmount / 100).toLocaleString("en-IN")} monthly, but the configured Razorpay plan is ${remoteCurrency || "unknown"} ${Number(remoteAmount / 100 || 0).toLocaleString("en-IN")} ${String(remotePlan?.period || "")} . Update the matching RAZORPAY_PLAN_*_ID in the environment.`
       });
     }
 
@@ -2050,3 +2052,5 @@ async function startServer() {
 
 
 startServer();
+
+

@@ -3976,3 +3976,8 @@ html {
 .app-shell .app-header .workspace-token-status .token-status-track::after {
   background: #fff !important;
 }
+
+/* Header token ring uses .token-donut; drive the visible ring from live remaining usage. */
+.app-shell .app-header .workspace-token-status .token-donut {
+  background: conic-gradient(var(--pi-blue, #2d6dcc) calc(var(--token-remaining, 0) * 1%), #ffffff 0) !important;
+}
