@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
+<link rel="alternate icon" href="/logo-mark.svg">
+<meta name="description" content="ProcureIQ is a procurement intelligence platform that helps teams find unusual price and spend patterns, investigate exceptions and prioritize where to look first.">
+<title>ProcureIQ | Procurement Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=145">
+<link rel="stylesheet" href="/procureiq-animations.css?v=145">
+</head>
+<body>
+<div class="p27-site" id="top">
+  <header class="p27-nav">
+    <a class="p27-brand" href="#top" aria-label="ProcureIQ home"><span class="p27-logo-frame"><img src="/logo-dark.svg" alt="ProcureIQ"></span></a>
+    <nav class="p27-nav-links" aria-label="Main navigation">
+      <a href="#platform">Platform</a>
+      <a href="#how">How it works</a>
+      <a href="#contactSection">Contact</a>
+      <button class="p27-nav-ghost" data-auth-sign-in id="navSignInBtn" type="button">Sign in</button>
+      <button class="p27-nav-primary" data-auth-open="platform" id="navEnterBtn" type="button">Open workspace <span>→</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="p27-hero piq-intelligence-hero">
+      <div class="p27-hero-copy">
+        <div class="p27-eyebrow">PROCUREMENT INTELLIGENCE</div>
+        <h1 class="piq-interactive-heading" tabindex="0">Find the procurement exceptions that deserve attention first.</h1>
+        <p>ProcureIQ analyzes purchasing evidence to surface price variance, contract leakage, invoice exceptions and supplier risk — then helps teams investigate the evidence behind each signal.</p>
+        <div class="p27-actions">
+          <button class="p27-button p27-button-primary" data-auth-open="platform" id="enterDashboardBtn" type="button">Explore ProcureIQ <span>→</span></button>
+          <a class="p27-button p27-button-secondary" href="#platform" id="viewProductBtn">See the platform</a>
+        </div>
+        <div class="p27-trust"><span>Evidence-first</span><span>Deterministic calculations</span><span>Human approval for material actions</span></div>
+      </div>
+      <div class="p27-hero-card" aria-label="ProcureIQ workflow preview">
+        <div class="p27-card-label">DECISION WORKFLOW</div>
+        <div class="p27-card-title">From evidence to action</div>
+        <div class="p27-value"><span>1. Upload purchasing data</span><strong>Input</strong></div>
+        <div class="p27-value"><span>2. Validate price variance</span><strong>Review</strong></div>
+        <div class="p27-value"><span>3. Prioritize exceptions</span><strong>Action</strong></div>
+      </div>
+    </section>
+
+    <section class="p27-product-preview" id="decisionLoop" aria-labelledby="productPreviewTitle">
+      <div class="p27-preview-copy">
+        <span class="p27-eyebrow dark">SEE THE PRODUCT</span>
+        <h2 id="productPreviewTitle" class="piq-interactive-heading" tabindex="0">Turn a purchasing signal into a reviewable decision.</h2>
+        <p>ProcureIQ brings the exception, financial impact and supporting evidence into one focused workspace.</p>
+        <div class="p27-preview-points">
+          <div><span>01</span><strong>Detect the signal</strong><small>Surface unusual purchasing patterns.</small></div>
+          <div><span>02</span><strong>Inspect the evidence</strong><small>See the values behind the exception.</small></div>
+          <div><span>03</span><strong>Record the outcome</strong><small>Keep the decision connected to the opportunity.</small></div>
+        </div>
+      </div>
+      <div class="p27-product-window piq-demo-window" aria-label="ProcureIQ live product workflow preview">
+        <div class="piq-video-stage">
+          <video class="piq-product-flow-video" autoplay muted loop playsinline preload="auto" aria-label="ProcureIQ workspace screen recording">
+            <source src="/procureiq-product-flow.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section class="p27-section" id="platform">
+      <div class="p27-section-head"><div><span class="p27-eyebrow dark">ONE PLATFORM · FOUR JOBS</span><h2 class="piq-interactive-heading" tabindex="0">Built around procurement decisions.</h2></div><p>Focused modules. Clear evidence. Action without dashboard overload.</p></div>
+      <div class="p27-pillars">
+        <a href="/workspace/analyze" class="p27-pillar piq-intelligence-card"><span>01</span><div><h3>Contract Recovery</h3><p>Find overpayment and missed rebate opportunities.</p></div><b>→</b></a>
+        <a href="/workspace/act" class="p27-pillar piq-intelligence-card"><span>02</span><div><h3>3-Way Match</h3><p>Resolve PO, GRN and invoice discrepancies.</p></div><b>→</b></a>
+        <a href="/workspace/chat" class="p27-pillar piq-intelligence-card"><span>03</span><div><h3>Guided Buying</h3><p>Turn ad-hoc requests into compliant RFQs.</p></div><b>→</b></a>
+        <a href="/workspace/control" class="p27-pillar piq-intelligence-card"><span>04</span><div><h3>Supplier Risk</h3><p>Surface concentration and evidence gaps early.</p></div><b>→</b></a>
+      </div>
+    </section>
+
+    <section class="p27-workflow" id="how">
+      <div class="p27-workflow-copy">
+        <span class="p27-eyebrow dark">THE PROCUREIQ DECISION LOOP</span>
+        <h2 class="piq-interactive-heading" tabindex="0">Find → investigate → act → measure.</h2>
+        <p>ProcureIQ keeps the workflow connected: surface an exception, inspect its evidence, let the team decide what to do, then record the outcome.</p>
+      </div>
+      <div class="p27-steps">
+        <article><b>01</b><span>Find</span><small>Surface price variance and other procurement exceptions from uploaded purchasing evidence.</small><em>Exception queue</em></article>
+        <article><b>02</b><span>Investigate</span><small>Open the source transaction and compare the values behind the signal before taking action.</small><em>Evidence review</em></article>
+        <article><b>03</b><span>Act</span><small>Record the human decision — validate, dismiss, investigate further or take commercial action.</small><em>Human decision</em></article>
+        <article><b>04</b><span>Measure</span><small>Track what happened next and connect the opportunity to its recorded outcome.</small><em>Outcome memory</em></article>
+      </div>
+    </section>
+
+    <section class="p27-contact" id="contactSection">
+      <div><span class="p27-eyebrow dark">CONTACT</span><h2>Talk to the ProcureIQ team.</h2><p>Capabilities, plans or enterprise requirements.</p><div class="p27-contact-links"><a href="mailto:divyanigour2@gmail.com">divyanigour2@gmail.com</a><a href="tel:+919011492357">+91 90114 92357</a></div></div>
+      <form class="p27-form" id="inquiryForm"><input aria-hidden="true" autocomplete="off" name="website" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" type="text"><label>Name<input name="name" placeholder="Your name" required></label><label>Work email<input name="email" type="email" placeholder="you@company.com" required></label><label>Message<textarea name="message" rows="4" placeholder="What would you like to explore?" required></textarea></label><button class="p27-button p27-button-primary" type="submit">Send inquiry <span>→</span></button><p id="inquiryStatus" role="status"></p></form>
+    </section>
+  </main>
+  <footer class="p27-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><div><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#contactSection">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/refund-cancellation">Refunds &amp; Cancellation</a><span>© 2026 ProcureIQ</span></div></footer>
+</div>
+<script src="/auth.js?v=145"></script>
+<script src="/script.js?v=145"></script>
+<script src="/procureiq-animations.js?v=145"></script>
+</body>
+</html>
