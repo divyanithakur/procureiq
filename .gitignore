@@ -6,5 +6,3 @@ environment/.env
 *.log
 .DS_Store
 coverage/
-
-environment/.env
