@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Signing you in — ProcureIQ</title>
+  <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#15171a;font-family:Inter,system-ui,sans-serif}.card{text-align:center;padding:32px}.label{font-size:11px;letter-spacing:.12em;font-weight:800;color:#2563EB}.copy{margin-top:12px;font-size:14px;color:#747c87}</style>
+</head>
+<body>
+  <main class="card"><div class="label">PROCUREIQ</div><div class="copy" id="status">Completing Google sign-in…</div></main>
+  <script src="/auth.js?v=145"></script>
+  <script>
+    (async()=>{
+      const status=document.getElementById('status');
+      try{
+        const clerk=await window.procureIQAuthReady;
+        if(!clerk) throw new Error('Authentication is not configured.');
+        await clerk.handleRedirectCallback({signInForceRedirectUrl:'/workspace/overview',signUpForceRedirectUrl:'/workspace/overview'});
+        window.location.replace('/workspace/overview');
+      }catch(error){
+        status.textContent=error?.errors?.[0]?.longMessage||error?.message||'Google sign-in could not be completed. Please try again.';
+      }
+    })();
+  </script>
+</body>
+</html>

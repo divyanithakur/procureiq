@@ -1,0 +1,369 @@
+/* ProcureIQ V111 — selected motion layer. Kept subtle so the existing UI remains the hero. */
+:root{--piq-motion-blue:#2563eb;--piq-motion-navy:#0b1f3a;--piq-motion-soft:rgba(37,99,235,.12)}
+
+/* SpecularButton — lightweight DOM/CSS port for the existing button system. */
+.piq-specular{position:relative;overflow:hidden;isolation:isolate;transition:transform .22s ease,box-shadow .22s ease,filter .22s ease!important}
+.piq-specular::after{content:"";position:absolute;inset:-45%;pointer-events:none;z-index:1;background:radial-gradient(circle at var(--piq-x,0%) var(--piq-y,50%),rgba(255,255,255,.38) 0,rgba(255,255,255,.14) 8%,transparent 26%);opacity:0;transform:translate3d(-16%,0,0);transition:opacity .22s ease,transform .42s cubic-bezier(.22,1,.36,1)}
+.piq-specular:hover::after,.piq-specular:focus-visible::after{opacity:1;transform:translate3d(0,0,0)}
+.piq-specular:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(37,99,235,.15)!important}
+.piq-specular > *{position:relative;z-index:2}
+
+/* SpotlightCard */
+.piq-spotlight{position:relative;overflow:hidden;--piq-mx:50%;--piq-my:50%}
+.piq-spotlight::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(circle 170px at var(--piq-mx) var(--piq-my),rgba(37,99,235,.10),transparent 72%);opacity:0;transition:opacity .35s ease}
+.piq-spotlight:hover::before,.piq-spotlight:focus-within::before{opacity:1}
+.piq-spotlight > *{position:relative;z-index:1}
+
+/* ScrollExpand */
+.piq-scroll-expand{transform-origin:center center;clip-path:inset(5% 3% 5% 3% round 20px);opacity:.92;will-change:transform,clip-path,opacity}
+.piq-scroll-expand.piq-scroll-active{transition:transform .18s linear,clip-path .18s linear,opacity .18s linear}
+
+/* PixelSwap */
+.piq-pixel-swap{position:relative;overflow:hidden}
+.piq-pixel-swap::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background-image:linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:14px 14px;mix-blend-mode:screen;transform:scale(1.08);transition:opacity .18s ease,transform .5s cubic-bezier(.22,1,.36,1)}
+.piq-pixel-swap:hover::after,.piq-pixel-swap:focus-within::after{opacity:.5;transform:scale(1)}
+
+/* Stepper */
+.piq-signal-sweep{position:relative;overflow:hidden}
+.piq-signal-sweep::after{content:"";position:absolute;top:0;bottom:0;left:-35%;width:28%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(37,99,235,.10),transparent);transform:skewX(-16deg);animation:piqSignalSweep 5.5s ease-in-out infinite;z-index:2}
+@keyframes piqSignalSweep{0%,62%{left:-35%;opacity:0}68%{opacity:.9}86%{left:115%;opacity:.18}100%{left:115%;opacity:0}}
+.piq-stepper .piq-step-active{border-color:rgba(37,99,235,.38)!important;background:linear-gradient(180deg,rgba(37,99,235,.055),transparent)!important;box-shadow:0 12px 30px rgba(37,99,235,.08)}
+.piq-signal-sweep{position:relative;overflow:hidden}
+.piq-signal-sweep::after{content:"";position:absolute;top:0;bottom:0;left:-35%;width:28%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(37,99,235,.10),transparent);transform:skewX(-16deg);animation:piqSignalSweep 5.5s ease-in-out infinite;z-index:2}
+@keyframes piqSignalSweep{0%,62%{left:-35%;opacity:0}68%{opacity:.9}86%{left:115%;opacity:.18}100%{left:115%;opacity:0}}
+.piq-stepper .piq-step-active b{transform:scale(1.05);color:var(--piq-motion-blue)}
+.piq-stepper article,.piq-stepper>div{transition:border-color .28s ease,background .28s ease,box-shadow .28s ease,transform .28s ease}
+.piq-stepper article:hover,.piq-stepper>div:hover{transform:translateY(-2px)}
+
+/* ThoughtLine */
+.piq-thoughtline{display:flex;align-items:center;gap:9px;margin-top:10px;padding:8px 10px;border:1px solid #e5ebf2;border-radius:10px;background:#fbfcfe;color:#64748b;font-size:10px;font-weight:700;overflow:hidden}
+.piq-thoughtline .piq-thought-dot{width:7px;height:7px;border-radius:50%;background:#2563eb;box-shadow:0 0 0 0 rgba(37,99,235,.25);animation:piqPulse 1.6s ease-in-out infinite;flex:none}
+.piq-thoughtline .piq-thought-shimmer{height:10px;flex:1;max-width:190px;border-radius:99px;background:linear-gradient(90deg,#e8edf4 20%,#d8e5ff 45%,#e8edf4 70%);background-size:200% 100%;animation:piqShimmer 1.45s linear infinite}
+.piq-thoughtline.is-done .piq-thought-dot{background:#16a34a;animation:none;box-shadow:none}
+.piq-thoughtline.is-done .piq-thought-shimmer{display:none}
+@keyframes piqPulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.25)}50%{box-shadow:0 0 0 6px rgba(37,99,235,0)}}
+@keyframes piqShimmer{to{background-position:-200% 0}}
+
+/* PeekRating enhancement for the existing feedback control. */
+.piq-peek-rating{display:flex;align-items:center;gap:2px}
+.piq-peek-rating .rating-star{transition:transform .18s cubic-bezier(.22,1,.36,1),color .18s ease,filter .18s ease}
+.piq-peek-rating .rating-star:hover,.piq-peek-rating .rating-star:focus-visible{transform:translateY(-3px) scale(1.12);filter:drop-shadow(0 5px 7px rgba(37,99,235,.18))}
+.piq-peek-rating .rating-star[data-peek-active="true"]{transform:translateY(-2px) scale(1.06)}
+
+@media (prefers-reduced-motion:reduce){
+ .piq-specular,.piq-specular::after,.piq-spotlight::before,.piq-scroll-expand,.piq-pixel-swap::after,.piq-signal-sweep::after,.piq-stepper article,.piq-stepper>div,.piq-peek-rating .rating-star{transition:none!important;animation:none!important}
+}
+
+/* =====================================================
+   V112 — cohesive intelligence motion layer
+   Marketing/homepage only. No motion is attached to destructive
+   or data-entry controls unless explicitly opted in.
+===================================================== */
+.piq-intelligence-hero{position:relative;isolation:isolate;overflow:hidden}
+.piq-intelligence-hero::before{content:"";position:absolute;inset:-20%;z-index:-2;pointer-events:none;background:radial-gradient(circle at 68% 38%,rgba(37,99,235,.13),transparent 28%),radial-gradient(circle at 88% 70%,rgba(96,165,250,.08),transparent 24%);animation:piqAmbient 12s ease-in-out infinite alternate}
+.piq-intelligence-hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.24;background-image:linear-gradient(rgba(37,99,235,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,.08) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent 75%)}
+.piq-intelligence-hero .p27-hero-copy>*{animation:piqHeroReveal .7s cubic-bezier(.22,1,.36,1) both}
+.piq-intelligence-hero .p27-hero-copy>*:nth-child(2){animation-delay:.08s}.piq-intelligence-hero .p27-hero-copy>*:nth-child(3){animation-delay:.16s}.piq-intelligence-hero .p27-hero-copy>*:nth-child(4){animation-delay:.24s}.piq-intelligence-hero .p27-hero-copy>*:nth-child(5){animation-delay:.32s}
+.piq-intelligence-hero .p27-hero-card{box-shadow:0 28px 80px rgba(15,23,42,.14),0 0 0 1px rgba(37,99,235,.08);transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s ease}
+.piq-intelligence-hero .p27-hero-card:hover{transform:translateY(-5px) scale(1.008);box-shadow:0 34px 90px rgba(15,23,42,.18),0 0 0 1px rgba(37,99,235,.16),0 0 60px rgba(37,99,235,.08)}
+.piq-intelligence-hero .p27-value{transition:transform .32s cubic-bezier(.22,1,.36,1),background .32s ease,border-color .32s ease}
+.piq-intelligence-hero .p27-value:hover{transform:translateX(5px);background:rgba(37,99,235,.045);border-color:rgba(37,99,235,.18)}
+.piq-intelligence-card{--card-accent:rgba(37,99,235,.11);position:relative;overflow:hidden;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .38s ease,box-shadow .38s ease,background .38s ease!important}
+.piq-intelligence-card::after{content:"";position:absolute;right:18px;bottom:18px;width:70px;height:24px;opacity:.38;background:linear-gradient(135deg,transparent 0 9%,rgba(37,99,235,.22) 10% 12%,transparent 13% 25%,rgba(37,99,235,.32) 26% 28%,transparent 29% 48%,rgba(37,99,235,.18) 49% 51%,transparent 52%);clip-path:polygon(0 85%,18% 65%,33% 72%,49% 32%,63% 50%,78% 12%,100% 28%,100% 100%,0 100%);transform:translateY(5px);transition:.4s ease}
+.piq-intelligence-card.piq-card-active{transform:translateY(-4px);box-shadow:0 20px 48px rgba(37,99,235,.10),inset 0 1px 0 rgba(255,255,255,.7)!important;background:linear-gradient(145deg,rgba(37,99,235,.06),rgba(255,255,255,.92))!important}
+.piq-intelligence-card.piq-card-active::after{opacity:.9;transform:none}
+.p27-pillars.piq-has-active .piq-intelligence-card:not(.piq-card-active){opacity:.58}
+.piq-reveal{opacity:0;transform:translateY(18px);filter:blur(5px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1),filter .7s ease}
+.piq-reveal.piq-visible{opacity:1;transform:none;filter:none}
+.piq-magnetic-cursor{position:fixed;left:0;top:0;width:7px;height:7px;border-radius:50%;background:#2563eb;pointer-events:none;z-index:2147483646;transform:translate3d(-100px,-100px,0);transition:width .18s ease,height .18s ease,opacity .2s ease,background .2s ease;box-shadow:0 0 18px rgba(37,99,235,.35)}
+.piq-magnetic-cursor::after{content:"";position:absolute;inset:-10px;border:1px solid rgba(37,99,235,.22);border-radius:50%;transform:scale(.7);transition:transform .2s ease,border-color .2s ease}
+.piq-magnetic-cursor.is-target{width:10px;height:10px;background:#0f4fd7}.piq-magnetic-cursor.is-target::after{transform:scale(1.55);border-color:rgba(37,99,235,.42)}
+.piq-page-transition{position:fixed;inset:0;background:#f8fafc;z-index:2147483645;pointer-events:none;opacity:0;transition:opacity .2s ease}.piq-page-transition.is-on{opacity:1}
+.workspace-token-status{transition:box-shadow .35s ease,transform .35s cubic-bezier(.22,1,.36,1)}
+.workspace-token-status.piq-token-pulse{animation:piqTokenPulse .65s cubic-bezier(.22,1,.36,1)}
+@keyframes piqAmbient{from{transform:translate3d(-1%,0,0) scale(1)}to{transform:translate3d(1%,1%,0) scale(1.035)}}
+@keyframes piqHeroReveal{from{opacity:0;transform:translateY(12px);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
+@keyframes piqTokenPulse{50%{transform:scale(1.035);box-shadow:0 0 0 7px rgba(37,99,235,.06)}}
+@media (pointer:coarse),(prefers-reduced-motion:reduce){.piq-magnetic-cursor{display:none!important}.piq-intelligence-hero::before{animation:none}.piq-intelligence-hero .p27-hero-copy>*{animation:none}.piq-reveal{opacity:1;transform:none;filter:none;transition:none}.piq-intelligence-card{transition:none!important}}
+
+
+/* V113 — homepage product-demo and balanced interaction layer */
+.piq-demo-window{transform-origin:center;box-shadow:0 28px 80px rgba(18,43,69,.14),0 0 0 1px rgba(37,99,235,.05)}
+.piq-video-stage{position:relative;aspect-ratio:16/9;background:#f7f9fc;overflow:hidden}
+.piq-product-flow-video{display:block;width:100%;height:100%;object-fit:cover;background:#f7f9fc}
+.piq-video-stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 60%,rgba(15,31,58,.04));mix-blend-mode:multiply}
+.piq-video-caption{position:absolute;left:18px;right:18px;bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid rgba(219,227,236,.9);border-radius:10px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);box-shadow:0 10px 28px rgba(18,43,69,.08)}
+.piq-video-caption span{display:flex;align-items:center;gap:7px;font-size:8px;font-weight:900;letter-spacing:.1em;color:#245dcc}.piq-video-caption i{width:6px;height:6px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.09);animation:piqPulse 1.7s ease-in-out infinite}.piq-video-caption strong{font-size:9px;color:#304762}
+.piq-hover-lift{transition:transform .34s cubic-bezier(.22,1,.36,1),box-shadow .34s ease,border-color .34s ease,background .34s ease!important}
+.piq-hover-lift:hover,.piq-hover-lift:focus-within{transform:translateY(-5px);box-shadow:0 20px 46px rgba(18,43,69,.11),0 0 34px rgba(37,99,235,.06)!important}
+.piq-interactive-heading{cursor:pointer;outline:none;transition:text-shadow .28s ease,transform .28s cubic-bezier(.22,1,.36,1)}
+.piq-interactive-heading:hover,.piq-interactive-heading:focus-visible{transform:translateY(-1px);text-shadow:0 0 24px rgba(37,99,235,.16)}
+.piq-heading-glow{animation:piqHeadingGlow .9s cubic-bezier(.22,1,.36,1)}
+@keyframes piqHeadingGlow{0%{text-shadow:0 0 0 rgba(37,99,235,0);transform:none}35%{text-shadow:0 0 28px rgba(37,99,235,.28);transform:translateY(-2px)}100%{text-shadow:0 0 0 rgba(37,99,235,0);transform:none}}
+/* Keep Business visually normal; Popular remains informational rather than a blue selected state. */
+.billing-page .dashboard-plan.featured{border-color:var(--ws-line)!important;box-shadow:var(--ws-shadow)!important}
+.billing-page .dashboard-plan.featured:before{background:#eef3f8;color:#58708b;border:1px solid #dbe3ec}
+@media(max-width:700px){.piq-video-caption{left:10px;right:10px;bottom:10px;align-items:flex-start;flex-direction:column;gap:5px}.piq-video-caption strong{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.piq-video-caption i{animation:none}.piq-hover-lift,.piq-interactive-heading{transition:none!important}.piq-heading-glow{animation:none!important}.piq-product-flow-video{animation:none}}
+
+
+/* V114 — consistent dashboard card hover + homepage heading presence */
+.piq-dashboard-hover{position:relative;transition:transform .32s cubic-bezier(.22,1,.36,1),box-shadow .32s ease,border-color .32s ease,background-color .32s ease!important;will-change:transform}
+.piq-dashboard-hover:hover,.piq-dashboard-hover:focus-within{transform:translateY(-4px);box-shadow:0 16px 38px rgba(18,43,69,.10),0 0 26px rgba(37,99,235,.045)!important;border-color:rgba(37,99,235,.18)!important}
+.piq-dashboard-hover:active{transform:translateY(-1px) scale(.998)}
+.piq-intelligence-hero .p27-hero-card{left:-24px}
+.piq-intelligence-hero .p27-hero h1,.p27-section-head h2,.p27-workflow h2,.p27-contact h2,.p27-preview-copy h2{animation:piqHeadingBreath 6s ease-in-out infinite}
+@keyframes piqHeadingBreath{0%,100%{text-shadow:0 0 0 rgba(37,99,235,0)}50%{text-shadow:0 0 22px rgba(37,99,235,.12)}}
+.piq-video-stage{aspect-ratio:1918/978!important;background:#fff}
+.piq-product-flow-video{object-fit:contain!important;background:#fff}
+.piq-video-caption{display:none!important}
+@media(max-width:900px){.piq-intelligence-hero .p27-hero-card{left:0}}
+@media(prefers-reduced-motion:reduce){.piq-dashboard-hover:hover,.piq-dashboard-hover:focus-within{transform:none}.piq-intelligence-hero .p27-hero h1,.p27-section-head h2,.p27-workflow h2,.p27-contact h2,.p27-preview-copy h2{animation:none}}
+
+
+/* V114 — compact token donut; real usage drives --token-used */
+.workspace-token-status{--token-used:0}
+.workspace-token-status .token-status-head{display:grid;grid-template-columns:auto 34px 1fr;align-items:center;gap:8px}
+.workspace-token-status .header-token-label{grid-column:1;grid-row:1}
+.token-donut{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#2d6dcc calc(var(--token-used,0) * 1%),#e9eef4 0);position:relative;transition:background .45s ease,transform .35s cubic-bezier(.22,1,.36,1)}
+.token-donut::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px rgba(217,226,236,.7)}
+.token-donut strong{position:relative;z-index:1;color:#173b67!important;font-size:7px!important;line-height:1;text-align:center;max-width:25px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.token-status-copy{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-width:0}
+.workspace-token-status .token-status-copy small{white-space:nowrap}
+.workspace-token-status .token-status-track{display:none}
+.workspace-token-status.piq-token-pulse .token-donut{transform:scale(1.08);box-shadow:0 0 0 5px rgba(37,99,235,.06)}
+@media(max-width:700px){.workspace-token-status .token-status-head{grid-template-columns:auto 30px 1fr}.token-donut{width:30px;height:30px}.token-donut::after{inset:4px}.token-donut strong{font-size:6px!important}}
+
+/* V116 — TOKEN-ONLY LIVE USAGE FIX
+   Free plan quota is 5,000/day. Header visuals are driven by live /api/usage data.
+*/
+.app-shell .app-header .workspace-token-status {
+  width: 205px !important;
+  min-width: 205px !important;
+  height: 50px !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 34px !important;
+  grid-template-rows: 1fr !important;
+  align-items: center !important;
+  column-gap: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-head {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.app-shell .app-header .workspace-token-status .header-token-label {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #718096 !important;
+  font-size: 8px !important;
+  line-height: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .01em !important;
+  white-space: nowrap !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-value {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  display: block !important;
+  margin: 2px 0 0 !important;
+  padding: 0 !important;
+  color: #173b67 !important;
+  font-size: 15px !important;
+  line-height: 18px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-donut {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: conic-gradient(
+    #2d6dcc 0 calc(var(--token-used, 0) * 1%),
+    #e9eef4 calc(var(--token-used, 0) * 1%) 100%
+  ) !important;
+  box-shadow: inset 0 0 0 1px #dfe6ee !important;
+  transform: none !important;
+  flex: 0 0 34px !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-donut::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 5px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: inset 0 0 0 1px #e2e8f0 !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-copy,
+.app-shell .app-header .workspace-token-status .token-status-meta,
+.app-shell .app-header .workspace-token-status .token-status-track,
+.app-shell .app-header .workspace-token-status .header-token-upgrade {
+  display: none !important;
+}
+
+.app-shell .app-header .workspace-token-status.piq-token-pulse .token-donut {
+  transform: scale(1.04) !important;
+  box-shadow: 0 0 0 4px rgba(45, 109, 204, .06) !important;
+}
+
+@media (max-width: 760px) {
+  .app-shell .app-header .workspace-token-status {
+    width: 170px !important;
+    min-width: 170px !important;
+    height: 44px !important;
+    grid-template-columns: minmax(0, 1fr) 30px !important;
+    column-gap: 6px !important;
+    padding: 6px 8px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .token-donut {
+    width: 30px !important;
+    height: 30px !important;
+    flex-basis: 30px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .header-token-label {
+    font-size: 7px !important;
+    line-height: 9px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .token-value {
+    font-size: 12px !important;
+    line-height: 15px !important;
+  }
+}
+
+/* V117.1 — TOKEN RING COMPACT ALIGNMENT
+   Keep token functionality/live usage unchanged.
+   Only tighten the visual spacing and vertically center the content.
+*/
+.app-shell .app-header .workspace-token-status {
+  position: relative !important;
+  width: 205px !important;
+  min-width: 205px !important;
+  height: 62px !important;
+  padding: 8px 62px 8px 12px !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-status-head {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.app-shell .app-header .workspace-token-status .header-token-label {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 9px !important;
+  line-height: 12px !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-value {
+  display: block !important;
+  margin: 2px 0 0 !important;
+  padding: 0 !important;
+  font-size: 15px !important;
+  line-height: 18px !important;
+  white-space: nowrap !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-donut {
+  position: absolute !important;
+  top: 50% !important;
+  right: 25px !important;
+  left: auto !important;
+  width: 34px !important;
+  height: 34px !important;
+  margin: 0 !important;
+  transform: translateY(-50%) !important;
+  border-radius: 50% !important;
+  background: conic-gradient(
+    #2d6dcc 0 calc(var(--token-used, 0) * 1%),
+    #e9eef4 calc(var(--token-used, 0) * 1%) 100%
+  ) !important;
+  box-shadow: inset 0 0 0 1px #d7e2ef !important;
+  flex: none !important;
+}
+
+.app-shell .app-header .workspace-token-status .token-donut::after {
+  inset: 5px !important;
+  background: #ffffff !important;
+  box-shadow: inset 0 0 0 1px #e2e8f0 !important;
+}
+
+.app-shell .app-header .workspace-token-status.piq-token-pulse .token-donut {
+  transform: translateY(-50%) scale(1.04) !important;
+}
+
+@media (max-width: 760px) {
+  .app-shell .app-header .workspace-token-status {
+    width: 170px !important;
+    min-width: 170px !important;
+    height: 54px !important;
+    padding: 7px 52px 7px 9px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .header-token-label {
+    font-size: 8px !important;
+    line-height: 10px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .token-value {
+    margin-top: 2px !important;
+    font-size: 13px !important;
+    line-height: 16px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .token-donut {
+    right: 20px !important;
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .app-shell .app-header .workspace-token-status .token-donut::after {
+    inset: 4px !important;
+  }
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#FFFFFF" name="theme-color"/>
+<meta content="ProcureIQ turns business spending data into smarter decisions and actionable savings opportunities." name="description"/>
+<title>Supplier Risk | ProcureIQ</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/style.css?v=145" rel="stylesheet"/>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
+<link rel="alternate icon" href="/logo-mark.svg">
+<link href="/workspace.css?v=145" rel="stylesheet"/>
+<link rel="stylesheet" href="/procureiq-animations.css?v=145"><meta name="procureiq-header-build" content="V110-CONTROL-LAYER"/></head><body><div class="app-shell" id="appShell"><header class="app-header">
+  <a aria-label="ProcureIQ overview" class="app-brand" href="/" id="appBrandHome">
+    <img alt="ProcureIQ" class="app-logo" src="/logo-dark.svg"/>
+  </a>
+  <div class="workspace-context">
+    <span class="workspace-context-dot"></span>
+    <span>Procurement intelligence workspace</span>
+  </div>
+  <div class="workspace-header-nav" aria-label="Workspace header">
+    <div class="workspace-token-status" id="workspaceTokenStatus" aria-label="AI token usage" title="AI tokens used, remaining and account limit">
+      <div class="token-status-head">
+        <span class="header-token-label">Tokens</span>
+        <strong class="token-value" id="headerTokensRemaining">—</strong><span class="token-donut" aria-hidden="true"></span>
+        <div class="token-status-copy"><small>remaining</small><button class="header-token-upgrade is-hidden" id="headerTokenUpgradeBtn" type="button">Upgrade</button></div>
+      </div>
+      <span id="headerTokenProgress" aria-hidden="true" class="header-token-progress-compat"></span>
+      <div class="token-status-meta">
+        <span>Used <b id="headerTokensUsed">0</b></span>
+        <span>Limit <b id="headerTokensLimit">0</b></span>
+      </div>
+    </div>
+
+    <button class="back-btn workspace-home-btn" id="backToWelcomeBtn" type="button">← Home</button>
+</div>
+</header><aside aria-label="ProcureIQ workspace navigation" class="app-sidebar"><div class="sidebar-account-block">
+  <button aria-controls="accountMenu" aria-expanded="false" class="dashboard-account-btn" data-auth-account="" id="dashboardAccountBtn" type="button">
+    <span class="dashboard-account-avatar" id="dashboardAccountAvatar">DG</span>
+    <span class="dashboard-account-copy">
+      <strong id="dashboardAccountName">Account</strong>
+      <span class="account-plan-row"><small id="dashboardAccountPlan">Free plan</small><span class="sidebar-upgrade" id="sidebarUpgradeBtn" role="button" tabindex="0">Upgrade</span></span>
+    </span>
+    <span class="dashboard-account-chevron">⌄</span>
+  </button>
+  <div class="account-menu is-hidden" id="accountMenu">
+    <div class="account-menu-profile account-menu-profile-clean">
+      <div>
+        <strong id="accountMenuName">My account</strong>
+        <span id="accountMenuEmail">Signed-in workspace</span>
+        <span class="account-menu-plan" id="accountMenuPlan">Free plan</span>
+      </div>
+    </div>
+    <div class="account-menu-divider"></div>
+    <button id="accountProfileBtn" type="button">Profile</button>
+    <button id="accountSettingsBtn" type="button">Settings</button>
+    <div class="account-menu-divider"></div>
+    <button class="account-signout" id="accountSignOutBtn" type="button">Log out</button>
+  </div>
+</div>
+<div class="sidebar-brand-caption">Procurement intelligence</div><div class="sidebar-label">WORKSPACE</div>
+<nav aria-label="Primary workspace" class="sidebar-nav">
+<a class="sidebar-link" data-page="overview" href="/workspace/overview"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 11 8-7 8 7v9H4v-9Zm5 9v-6h6v6"/></svg></span><span>Overview</span></a>
+<a class="sidebar-link" data-page="act" href="/workspace/act"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19 19 5m0 0h-7m7 0v7"/></svg></span><span>Exception Resolver</span></a>
+<a class="sidebar-link" data-page="analyze" href="/workspace/analyze"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16v-5m4 5V7m4 9v-8"/></svg></span><span>Contract Recovery</span></a>
+<a class="sidebar-link" data-page="chat" href="/workspace/chat"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Guided Buying</span></a>
+<a class="sidebar-link" data-page="control" href="/workspace/control"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Supplier Risk</span></a>
+<a class="sidebar-link" data-page="reports" href="/workspace/reports"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Zm9 0v4h4M9 12h6M9 16h6M9 8h2"/></svg></span><span>Reports</span></a>
+</nav>
+<div class="sidebar-spacer"></div><div class="sidebar-label sidebar-support-label">ACCOUNT</div>
+<nav aria-label="Workspace support" class="sidebar-nav sidebar-nav-secondary">
+<a class="sidebar-link" data-page="billing" href="/workspace/billing"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4V7Zm3-3h10v3H7V4Zm0 8h10M7 16h5"/></svg></span><span>Plans &amp; Billing</span></a>
+<a class="sidebar-link" data-page="help" href="/workspace/help"><span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-.9.9-1.9 1.2-1.9 2.6M12 17h.01"/></svg></span><span>Help &amp; Support</span></a>
+</nav></aside><main class="workspace-main" id="dashboardOverview">
+<section class="page-frame product-page feature-page">
+  <div class="page-heading feature-heading">
+    <div><span class="section-kicker">PILLAR 04 · CONTINUOUS MONITORING</span><h1>Supplier Risk &amp; Geopolitical Auditor</h1>
+    <p>See concentration and evidence gaps before they become operational surprises.</p></div>
+    <div class="feature-outcome"><span>Primary outcome</span><strong>Know where exposure sits</strong><small>External risk is never fabricated from internal data.</small></div>
+  </div>
+
+  <section class="work-card">
+    <div class="section-header"><div><span class="section-kicker">INTERNAL EXPOSURE AUDIT</span><h2>Supplier concentration</h2><p>Upload purchasing data on Overview first, then run this audit.</p></div><div class="risk-refresh-action"><button class="secondary-btn" id="runRiskAuditBtn" type="button">Refresh audit</button><span id="riskAuditStatus" class="inline-status" role="status" aria-live="polite"></span></div></div>
+    <div class="risk-summary-grid">
+      <div><span>Suppliers</span><strong id="riskSupplierCount">—</strong></div>
+      <div><span>Largest supplier share</span><strong id="riskTopShare">—</strong></div>
+      <div><span>Single-source materials</span><strong id="riskSingleSource">—</strong></div>
+      <div><span>Data freshness</span><strong id="riskDataFreshness">—</strong></div>
+    </div>
+  </section>
+
+  <section class="feature-grid-2">
+    <article class="work-card">
+      <div class="section-header"><div><span class="section-kicker">RISK SIGNALS</span><h2>Evidence-backed findings</h2></div></div>
+      <div id="riskFindings" class="finding-list"><div class="result-empty"><p>Run the audit after uploading data.</p></div></div>
+    </article>
+    <article class="work-card">
+      <div class="section-header"><div><span class="section-kicker">MIGRATION READINESS</span><h2>What to prepare</h2></div></div>
+      <div id="migrationRunbook" class="runbook-list">
+        <div class="runbook-step"><span>01</span><div><strong>Identify an alternative</strong><small>Use approved supplier records rather than inventing a replacement.</small></div></div>
+        <div class="runbook-step"><span>02</span><div><strong>Validate commercial terms</strong><small>Confirm price, capacity, lead time and contractual obligations.</small></div></div>
+        <div class="runbook-step"><span>03</span><div><strong>Document the decision</strong><small>Keep evidence and owner approval in the audit trail.</small></div></div>
+      </div>
+    </article>
+  </section>
+
+
+  <section class="work-card supplier-scorecard-card">
+    <div class="section-header"><div><span class="section-kicker">SUPPLIER PERFORMANCE</span><h2>Evidence-based scorecards</h2><p>Calculated from the loaded procurement records only. No external risk rating is inferred.</p></div></div>
+    <div id="supplierScorecards" class="supplier-scorecards"><div class="result-empty"><p>Load procurement data to generate supplier scorecards.</p></div></div>
+  </section>
+
+  <section class="work-card evidence-note"><strong>Important</strong><span>Financial-health, sanctions and geopolitical monitoring require connected external data sources. This current build deliberately reports internal concentration risk and evidence gaps instead of pretending to have live external intelligence.</span></section>
+</section>
+<footer class="dashboard-footer"><div><strong>PROCUREIQ</strong><span>Procurement intelligence</span></div><nav><a data-page="reports" href="/workspace/reports">Reports</a><a data-page="billing" href="/workspace/billing">Plans &amp; Billing</a><a data-page="help" href="/workspace/help">Help &amp; Support</a></nav><span>© 2026 ProcureIQ</span></footer></main></div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="/auth.js?v=145"></script><script src="/script.js?v=146"></script><script>window.PROCUREIQ_PAGE="control";</script><script src="/core-features.js?v=145"></script><script>document.addEventListener("DOMContentLoaded",function(){const f=document.querySelector(".dashboard-footer");if(f&&!f.querySelector("[data-legal-links]")){const d=document.createElement("span");d.dataset.legalLinks="";d.innerHTML='<a href="/privacy">Privacy Policy</a><a href="/terms">Terms & Conditions</a><a href="/refund-cancellation">Refunds & Cancellation</a>';f.appendChild(d);}});</script>
+<script>window.PROCUREIQ_BUILD="110";</script><script src="/procureiq-animations.js?v=145"></script>
+</body></html>
