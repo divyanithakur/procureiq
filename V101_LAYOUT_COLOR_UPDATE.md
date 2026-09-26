@@ -1,4 +1,4 @@
-# ProcureIQ V101 — Layout, Color & Token Flow Update
+# ProcureIQ  — Layout, Color & Token Flow Update
 
 - Removed the legacy desktop `margin-top: 110px` workspace offset that pushed page content too far below the fixed header.
 - Normalized the desktop fixed header/sidebar geometry to 82px and tightened workspace top padding.
